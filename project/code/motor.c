@@ -1,99 +1,125 @@
+// ============================================================
+// 文件名: motor.c
+// 功能说明: 电机控制与编码器读取模块
+// 实现直流电机PID速度闭环控制、编码器脉冲读取与低通滤波，
+// 以及电机PWM和方向的初始化配置。
+// ============================================================
+
 #include "config.h"
 
-int16 target_speed_L = 0;
-int16 target_speed_R = 0;
-int16 real_speed_L = 0;
-int16 real_speed_R = 0;
+int16 target_speed_L = 0;       // 左轮目标速度
+int16 target_speed_R = 0;       // 右轮目标速度
+int16 real_speed_L = 0;         // 左轮实际速度（编码器滤波后）
+int16 real_speed_R = 0;         // 右轮实际速度（编码器滤波后）
 
-float alpha = 0.4;
+float alpha = 0.4;              // 编码器速度低通滤波系数
 
-LowPassFilter filt_encoder_L;
-LowPassFilter filt_encoder_R;
+LowPassFilter filt_encoder_L;   // 左轮编码器低通滤波器
+LowPassFilter filt_encoder_R;   // 右轮编码器低通滤波器
 
 
-void motor_control(void)  // 电机控制函数
+// 函数名: motor_control
+// 功能: 电机控制函数（速度环输出执行）
+// 说明: 调用左右轮PID控制器计算输出，通过DIR引脚控制方向，
+//       PWM引脚控制占空比，实现电机正反转调速。
+void motor_control(void)
 {
-	static int16 speed_outL = 0,                        // 左轮速度输出
-					 speed_outR = 0;                    // 右轮速度输出
-		   
-	speed_outL = PID_L(target_speed_L, real_speed_L);   // 左轮速度PID计算
-	speed_outR = PID_R(target_speed_R, real_speed_R);   // 右轮速度PID计算
-	
-	sprintf(uart, "%d,%d,%d\r\n", target_speed_L,real_speed_L,speed_outL);  // 串口打印调试数据
-	uart_write_buffer(UART_1, uart, strlen(uart));
-	
-			
-	if(speed_outL >= 0)                                 // 正转（速度为正）
-       {
-           gpio_set_level(MOTOR_DIR_L, GPIO_LOW);       // DIR输出低电平
-           pwm_set_duty(MOTOR_PWM_L, speed_outL);       // 设置正占空比
-       }
-    else                                                // 反转（速度为负）
-       {
-           gpio_set_level(MOTOR_DIR_L, GPIO_HIGH);      // DIR输出高电平
-           pwm_set_duty(MOTOR_PWM_L, -speed_outL);      // 设置正占空比（取绝对值）
-       }
-	
-	if(speed_outR >= 0)                                 // 正转（速度为正）
-       {
-           gpio_set_level(MOTOR_DIR_R, GPIO_LOW);       // DIR输出低电平
-           pwm_set_duty(MOTOR_PWM_R, speed_outR);       // 设置正占空比
-       }
-    else                                                // 反转（速度为负）
-       {
-           gpio_set_level(MOTOR_DIR_R, GPIO_HIGH);      // DIR输出高电平
-           pwm_set_duty(MOTOR_PWM_R, -speed_outR);      // 设置正占空比（取绝对值）
-       }
+    static int16 speed_outL = 0,    // 左轮速度PID输出
+                 speed_outR = 0;    // 右轮速度PID输出
+           
+    speed_outL = PID_L(target_speed_L, real_speed_L);   // 左轮速度PID计算
+    speed_outR = PID_R(target_speed_R, real_speed_R);   // 右轮速度PID计算
+    
+    // 串口打印调试数据：目标速度、实际速度、PID输出
+//    sprintf(uart, "%d,%d,%d\r\n", target_speed_L, real_speed_L, speed_outL);
+//    uart_write_buffer(UART_1, uart, strlen(uart));
+    
+            
+    // 左轮控制
+    if(speed_outL >= 0)             // 正转（速度为正）
+    {
+        gpio_set_level(MOTOR_DIR_L, GPIO_LOW);      // DIR输出低电平
+        pwm_set_duty(MOTOR_PWM_L, speed_outL);      // 设置正占空比
+    }
+    else                            // 反转（速度为负）
+    {
+        gpio_set_level(MOTOR_DIR_L, GPIO_HIGH);     // DIR输出高电平
+        pwm_set_duty(MOTOR_PWM_L, -speed_outL);     // 设置正占空比（取绝对值）
+    }
+    
+    // 右轮控制
+    if(speed_outR >= 0)             // 正转（速度为正）
+    {
+        gpio_set_level(MOTOR_DIR_R, GPIO_LOW);      // DIR输出低电平
+        pwm_set_duty(MOTOR_PWM_R, speed_outR);      // 设置正占空比
+    }
+    else                            // 反转（速度为负）
+    {
+        gpio_set_level(MOTOR_DIR_R, GPIO_HIGH);     // DIR输出高电平
+        pwm_set_duty(MOTOR_PWM_R, -speed_outR);     // 设置正占空比（取绝对值）
+    }
 
 }
 
-void read_encoder(void)  // 读取编码器并计算实际速度
+// 函数名: read_encoder
+// 功能: 读取编码器并计算实际速度
+// 说明: 读取左右编码器脉冲数，经过低通滤波得到平滑速度值，
+//       然后清零编码器计数，为下一次采样做准备。
+void read_encoder(void)
 {
-	static int16 encoder_L = 0,                         // 左轮编码器累计值
-					 encoder_R = 0;                     // 右轮编码器累计值
-	
-	encoder_L = -encoder_get_count(ENCODER_DIR_L);      // 读取左轮编码器计数值（取反）
-	encoder_R = encoder_get_count(ENCODER_DIR_R);       // 读取右轮编码器计数值
+    static int16 encoder_L = 0,     // 左轮编码器累计值
+                 encoder_R = 0;     // 右轮编码器累计值
+    
+    encoder_L = -encoder_get_count(ENCODER_DIR_L);      // 读取左轮编码器计数值（取反）
+    encoder_R = encoder_get_count(ENCODER_DIR_R);       // 读取右轮编码器计数值
 
-//	if (gpio_get_level(ENCODER_DIR_DIR_L) == 1)         // 方向检测（已禁用）
-//	{
-//		encoder_L = -encoder_L;
-//	}
-//	if (gpio_get_level(ENCODER_DIR_DIR_R) == 1)
-//	{
-//		encoder_R = -encoder_R;
-//	}
+//    if (gpio_get_level(ENCODER_DIR_DIR_L) == 1)       // 方向检测（已禁用）
+//    {
+//        encoder_L = -encoder_L;
+//    }
+//    if (gpio_get_level(ENCODER_DIR_DIR_R) == 1)
+//    {
+//        encoder_R = -encoder_R;
+//    }
 
-	real_speed_L = lowpass_update(&filt_encoder_L, encoder_L);  // 左轮速度低通滤波
-	real_speed_R = lowpass_update(&filt_encoder_R, encoder_R);  // 右轮速度低通滤波
-	
-//	ldistance=ldistance + L_speed;     
-//	rdistance=rdistance + R_speed;			
-//	distance=(ldistance+rdistance)/2;
-//	if(menu_flag==4)
-//	{
-//		test_ldistance = test_ldistance + L_speed;
-//		test_rdistance = test_rdistance + R_speed;
-//		test_distance = (test_ldistance + test_rdistance);
-//	}
+    // 低通滤波，得到平滑速度
+    real_speed_L = lowpass_update(&filt_encoder_L, encoder_L);  // 左轮速度低通滤波
+    real_speed_R = lowpass_update(&filt_encoder_R, encoder_R);  // 右轮速度低通滤波
+    
+//    ldistance = ldistance + L_speed;     
+//    rdistance = rdistance + R_speed;            
+//    distance = (ldistance + rdistance) / 2;
+//    if(menu_flag == 4)
+//    {
+//        test_ldistance = test_ldistance + L_speed;
+//        test_rdistance = test_rdistance + R_speed;
+//        test_distance = (test_ldistance + test_rdistance);
+//    }
 
-	encoder_clear_count(ENCODER_DIR_L);                 // 清除左轮编码器计数值
-    encoder_clear_count(ENCODER_DIR_R);                 // 清除右轮编码器计数值
+    encoder_clear_count(ENCODER_DIR_L);     // 清除左轮编码器计数值
+    encoder_clear_count(ENCODER_DIR_R);     // 清除右轮编码器计数值
 }
 
-void motor_init(void)  // 电机初始化函数
+// 函数名: motor_init
+// 功能: 电机初始化函数
+// 说明: 初始化左右轮DIR方向GPIO和PWM输出，以及中舵机PWM。
+//       PWM频率统一设置为17KHz。
+void motor_init(void)
 {
-	gpio_init(MOTOR_DIR_L, GPO, GPIO_HIGH, GPO_PUSH_PULL);  // 左轮DIR GPIO初始化：输出模式、默认高电平、推挽输出
-    pwm_init(MOTOR_PWM_L, 17000, 0);                        // 左轮PWM初始化：频率17KHz、初始占空比0
-    gpio_init(MOTOR_DIR_R, GPO, GPIO_HIGH, GPO_PUSH_PULL);  // 右轮DIR GPIO初始化：输出模式、默认高电平、推挽输出
-    pwm_init(MOTOR_PWM_R, 17000, 0);                        // 右轮PWM初始化：频率17KHz、初始占空比0
-	pwm_init(MOTOR_PWM_M, 17000, 0);                        // 中舵机PWM初始化：频率17KHz、初始占空比0
+    gpio_init(MOTOR_DIR_L, GPO, GPIO_HIGH, GPO_PUSH_PULL);  // 左轮DIR GPIO初始化
+    pwm_init(MOTOR_PWM_L, 17000, 0);                        // 左轮PWM初始化：17KHz、占空比0
+    gpio_init(MOTOR_DIR_R, GPO, GPIO_HIGH, GPO_PUSH_PULL);  // 右轮DIR GPIO初始化
+    pwm_init(MOTOR_PWM_R, 17000, 0);                        // 右轮PWM初始化：17KHz、占空比0
+    pwm_init(MOTOR_PWM_M, 17000, 0);                        // 中舵机PWM初始化：17KHz、占空比0
 }
 
+// 函数名: encoder_init
+// 功能: 编码器初始化函数
+// 说明: 初始化左右轮带方向编码器接口，并配置低通滤波器。
 void encoder_init(void)
 {
-    encoder_dir_init(ENCODER_DIR_L, ENCODER_DIR_DIR_L, ENCODER_DIR_PULSE_L);   	
-	encoder_dir_init(ENCODER_DIR_R, ENCODER_DIR_DIR_R, ENCODER_DIR_PULSE_R);    
-	lowpass_init(&filt_encoder_L, alpha);
-	lowpass_init(&filt_encoder_R, alpha);
+    encoder_dir_init(ENCODER_DIR_L, ENCODER_DIR_DIR_L, ENCODER_DIR_PULSE_L);      
+    encoder_dir_init(ENCODER_DIR_R, ENCODER_DIR_DIR_R, ENCODER_DIR_PULSE_R);    
+    lowpass_init(&filt_encoder_L, alpha);   // 初始化左轮速度低通滤波
+    lowpass_init(&filt_encoder_R, alpha);   // 初始化右轮速度低通滤波
 }
