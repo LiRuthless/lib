@@ -1,108 +1,113 @@
-ï»¿//#include "pid.h"
-//#include "control.h"
-//#include "zf_common_headfile.h"
-// 
-// 
-
-///*******************************************************************************
-// * å‡½ æ•° å       :EP_test()
-// * å‡½æ•°åŠŸèƒ½		   : æ–¹å‘ç¯æµ‹è¯•å‡½æ•°
-// * è¾“    å…¥       : æ— 
-// * è¾“    å‡º    	 : æ— 
-// *******************************************************************************/
-// void EP_test(void) 
-//{
-//			caculation();				// æ•°æ®å¤„ç†ï¼ˆç”µæ„Ÿå½’ä¸€åŒ–ï¼‰æ•°æ®å¤„ç†ï¼ˆåå·®å€¼è®¡ç®—ï¼‰
-//			judge();
-//	
-//			position_new();
-
-//	if(adc_data_filted[0]<300&&adc_data_filted[1]<300&&adc_data_filted[2]<300&&adc_data_filted[3]<300)		
-//	{
-//		  pwm_base = Error_angle_out = angle_out = 0;
-//	      menu_flag =1;
-//		  menu_room=0;
-//		 
-//	}
-//			left_duty =  spd_out_L;
-//			right_duty =  spd_out_R;
-//	
-//			if (left_duty > MAX_SPEED)  left_duty = MAX_SPEED;
-//            if (left_duty < MIN_SPEED)  left_duty = MIN_SPEED;
-//	
-//	        if (right_duty > MAX_SPEED) right_duty = MAX_SPEED;
-//            if (right_duty < MIN_SPEED) right_duty = MIN_SPEED;
-//	    pwm_set_duty(PWM_L,left_duty);
-//		pwm_set_duty(PWM_R,right_duty);
-
-//}
-
-// 
-
-//void PID_test(void)//
-//{
-////		exp_speed_l = exp_speed_r=test_speed;
-//		target_speed_L = target_speed_R =test_speed;
-//	
-//		speed_pid_calc_left(float target_speed_L, float real_speed_L)
-//	    speed_pid_calc_left(float target_speed_R, float real_speed_R)
-//		
-//		left_duty =  spd_out_L;
-//     	right_duty =  spd_out_R;
-
-//		if (right_duty > MAX_SPEED) right_duty = MAX_SPEED;
-//        if (right_duty < MIN_SPEED) right_duty = MIN_SPEED;
-
-//		//L_sum_send = L_duty/100;
-//		
-//		 motor_set_duty_L ;
-//	     motor_set_duty_R ;
-//}
+#include "config.h"
 
 
-//void Tract(void)//
-//	{
-//	
-//	
-//	caculation();				// æ•°æ®å¤„ç†ï¼ˆç”µæ„Ÿå½’ä¸€åŒ–ï¼‰æ•°æ®å¤„ç†ï¼ˆåå·®å€¼è®¡ç®—ï¼‰
-//	judge();																																							// å†³ç­–ï¼ˆå…ƒç´ åˆ¤æ–­ï¼‰
-//	position_new();
-//	if(reg_flag== 0)
-//		exp_speed_l = straight_speed;// æ²¡æ‡‚è¿™æ˜¯å•¥
-//	
-//	 speed_pid_calc_left(float target_speed_L, float real_speed_L)
-//	 speed_pid_calc_left(float target_speed_R, float real_speed_R)
-//		
+// º¯ÊıÃû: speed_test
+// ¹¦ÄÜ: ËÙ¶È»·µ÷²Î
+// ËµÃ÷: 
+//  
+void speed_test2(void)
+{
+static uint16 cnt = 0; 
 
-//	if(adc_data_filted[0]<50&&adc_data_filted[1]<50&&adc_data_filted[2]<50&&adc_data_filted[3]<50 && reg_flag == 1)		
-//	{
-//		  L_Zduty = R_Zduty = L_duty = R_duty = Error_angle_out = angle_out = 0;
-//	      menu_flag = 1;
-//	  	  menu_room=0;
-//	  	 
-//	}
-//		L_duty = L_duty + L_Zduty;
-//		if (left_duty > MAX_SPEED)  left_duty = MAX_SPEED;
-//        if (left_duty < MIN_SPEED)  left_duty = MIN_SPEED;
-//	
-//	
-//		if(reg_flag == 0)                                    // è·‘ç›´çº¿è¿›å…¥èµ›é“
-//		{
-//			L_pwm_out = L_duty;
-//			R_pwm_out = L_duty;
-//		}
-//		else
-//		{
-//			L_pwm_out = L_duty - Error_angle_out + angle_out;
-//			R_pwm_out = L_duty + Error_angle_out - angle_out;
-//		}
-//		
-//		if (left_duty > MAX_SPEED)  left_duty = MAX_SPEED;
-//        if (left_duty < MIN_SPEED)  left_duty = MIN_SPEED;
-//		if (right_duty > MAX_SPEED) right_duty = MAX_SPEED;
-//        if (right_duty < MIN_SPEED) right_duty = MIN_SPEED;
-//		
-//		motor_set_duty_L ;
-//	    motor_set_duty_R ;
-//}
+	
+    cnt++;
+    if(cnt >= 80)               // 20 * 10ms = 200ms
+    {
+        cnt = 0;
+        if(base_speed != 1000){
+            base_speed =1000;
+        }
+        else{
+            base_speed = 600;
+        }
+    }
+	target_speed_L = base_speed;
+	target_speed_R = base_speed;
+}
 
+
+
+void speed_test(void)
+{
+static uint16 cnt = 0; 
+	
+	read_adc();     // ¶ÁÈ¡ËÄÂ·µç¸ĞADCÖµ 
+	
+    cnt++;
+    if(cnt >= 80)               // 20 * 10ms = 200ms
+    {
+        cnt = 0;
+        if(base_speed != 1000)
+        {
+            base_speed =1000;
+//			KP_x = 1.6f;
+//			KD_x = 0.6f;
+        }
+        else
+        {
+            base_speed = 600;
+//			KP_x = 0.5f;
+//			KD_x = 0.6f;
+        }
+    }
+	
+    // ¼ì²âµç¸ĞÖµ×ÜºÍÊÇ·ñ´óÓÚãĞÖµ£¨ÅĞ¶ÏÊÇ·ñÔÚÈüµÀÉÏ£©
+    if( adc_filted[0] + adc_filted[1] + adc_filted[2] + adc_filted[3] > 300 )
+    {
+        // ÔÚÈüµÀÉÏ£¬¼ÆËãÑ­¼£Æ«²î²¢²îËÙ¿ØÖÆ
+		track_error = get_track_error();
+        track_out = PID_track();
+        
+        // ¸ù¾İÆ«²î·½Ïò·ÖÅä×óÓÒÂÖËÙ¶È
+        if( track_out >= 0 ){
+            target_speed_L = base_speed - 3 * track_out;    // ×óÂÖ¼õËÙ
+            target_speed_R = base_speed + 1 * track_out;    // ÓÒÂÖ¼ÓËÙ
+        }
+        else{
+            target_speed_L = base_speed - 1 * track_out;    // ×óÂÖ¼ÓËÙ
+            target_speed_R = base_speed + 3 * track_out;    // ÓÒÂÖ¼õËÙ
+        }
+		
+		pwm_set_duty(MOTOR_PWM_M, fan_duty); // ÉèÖÃ¸ºÑ¹µç»úÕ¼¿Õ±È
+		
+        Start = 1;      // ±ê¼ÇÒÑÆô¶¯
+    }
+    else // µç¸ĞÖµ¹ıµÍ£¬ÈÏÎª³öÈüµÀ»òÍ£Ö¹Ïß
+    {    
+        Start = 0;      // Çå³ıÆô¶¯±êÖ¾
+    }
+    
+    // Î´Æô¶¯×´Ì¬ÏÂÍ£Ö¹µç»ú
+    if( Start == 0 )
+    {
+		target_speed_L = 0;
+		target_speed_R = 0;
+		pwm_set_duty(MOTOR_PWM_M, 1000); // ¸ºÑ¹µç»ú»ØÄ¬ÈÏÕ¼¿Õ±È
+    }
+
+}
+
+void track_test(void)
+{
+
+
+
+
+
+
+}
+
+void adc_test(void)
+{
+	read_adc();     // ¶ÁÈ¡ËÄÂ·µç¸ĞADCÖµ 
+	
+	track_error = get_track_error();
+    track_out = PID_track();
+	
+	sprintf(uart, "%d,%d,%d,%d,", adc_filted[0], adc_filted[1], adc_filted[2], adc_filted[3]);
+ 	uart_write_buffer(UART_1,uart,strlen(uart));
+	
+	sprintf(uart,"%d,%d\n",track_error,track_out);
+ 	uart_write_buffer(UART_1,uart,strlen(uart));
+	
+}

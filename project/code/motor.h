@@ -17,10 +17,15 @@
 #define ENCODER_DIR_DIR_R           (IO_P11)            // 右轮编码器方向
 #define ENCODER_DIR_PULSE_R         (TIM0_ENCOEDER_P34) // 右轮编码器脉冲
 
+// 速度环PID类型选择：1=位置式PID，0=增量式PID
+#define USE_POSITION_PID            (1)
+
+
 extern int16 target_speed_L;    // 左轮目标速度
 extern int16 target_speed_R;    // 右轮目标速度
 extern int16 real_speed_L;      // 左轮实际速度
 extern int16 real_speed_R;      // 右轮实际速度
+extern int16 base_speed;	    // 基础目标速度
 
 extern float alpha;             // 低通滤波系数
 

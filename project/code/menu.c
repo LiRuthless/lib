@@ -1,6 +1,6 @@
-﻿// ============================================================
+// ============================================================
 // 文件名: menu.c
-// 功能说明: 菜单处理函数（优化版）
+// 功能说明: 菜单处理函数（极速操作版）
 // 智能车电磁循迹系统主循环，包含系统初始化、PID参数设定、
 // 定时中断配置以及主循环空转。
 // 
@@ -8,38 +8,38 @@
 // 
 // 【按键定义】
 //  UP/DOWN    : 上下移动光标
-//  OK         : 进入/确认
+//  OK         : 进入/确认（主页上按OK直接加载模式，无需跳转）
 //  BACK       : 返回上级页面
 //  LEFT/RIGHT : 参数加/减（仅在PID修改模式下有效，LEFT增加、RIGHT减少）
-//  RST        : 复位，返回主页
+//  RST        : 清屏刷新（保持当前页面和光标，仅复位屏幕显示）
+//  TWO        : 全局快捷键，一键从备份重新加载PID参数（第二路ADC，约1262）
 // 
 // 【主页菜单】（上电默认进入）
 //  1. Inductance  : 查看四路ADC电感实时数据
-//  2. Settings    : 进入模式选择页
-//  3. Start       : （预留）
-//  4. Run         : （预留）
+//  2. PID         : 进入PID参数调参页（方向环+速度环共6个参数）
+//  3. Settings    : 调整基础速度和负压电机占空比
 // 
-// 【模式选择页】
-//  1. Load Steady   : 加载平稳模式PID参数
-//  2. Load Ordinary : 加载普通模式PID参数
-//  3. Load Fast     : 加载快速模式PID参数
-//  4. PID Params    : 进入PID参数修改页
-// 
-// 【PID参数修改】
-//  1. 进入"PID Params"后选择 Direction PID（方向环）或 Speed PID（速度环）
-//  2. 按 OK 进入修改模式：
+// 【PID参数修改】（点击模式后直接进入）
+//  页面同时显示方向环和速度环共6个参数：
+//    KP_x / KI_x / KD_x / KP_v / KI_v / KD_v
+//  1. UP/DOWN 切换参数项（共6项）
+//  2. 按 OK 进入修改倍率：
 //      - 第1次按OK：进入 *1   倍率（LEFT/RIGHT ±1.0）
 //      - 第2次按OK：进入 *10  倍率（LEFT/RIGHT ±10.0）
-//      - 第3次按OK：进入 *0.1 倍率（LEFT/RIGHT ±0.1）
+//      - 第3次按OK：进入 *0.1  倍率（LEFT/RIGHT ±0.1）
 //      - 第4次按OK：回到 *1   倍率（循环）
-//  3. 在"选择参数"状态（无倍率显示）按 BACK 返回PID类型页
+//  3. 在"选择参数"状态按 BACK 返回主页
 //  4. 在任意倍率状态按 BACK 返回上一级倍率，直到退出修改模式
-//  5. UP/DOWN 在所有修改状态下均可切换参数项（Kp / Ki / Kd）
+// 
+// 【Settings页面】
+//  1. Base Speed   : 基础目标速度（LEFT/RIGHT ±10）
+//  2. Fan Duty     : 负压电机占空比（LEFT/RIGHT ±10）
+//  3. 按 BACK 返回主页
 // 
 // 【返回逻辑】
 //  所有页面按 BACK 返回上级；主页按 BACK 停留在主页
-//  按 RST 任意时刻直接复位到主页
-// 
+//  按 RST 仅清屏刷新，不跳转页面
+//  按 TWO 任意时刻可从备份重新加载PID参数
 // ============================================================
 #include "config.h"
 
@@ -50,19 +50,23 @@ typedef struct
     float kp_v, ki_v, kd_v;
 } PidParams;
 
-// 三种模式参数存储（平稳/普通/快速）
-static PidParams mode_params[3] = {0};
+// PID参数备份存储
+static PidParams mode_param = {0};
 
 // 参数指针数组（用于修改页面快速访问，避免冗长的switch-case）
-static float* const pid_dir_vars[3]  = {&KP_x, &KI_x, &KD_x};
-static float* const pid_speed_vars[3]= {&KP_v, &KI_v, &KD_v};
+static float* const pid_dir_vars[3]   = {&KP_x, &KI_x, &KD_x};
+static float* const pid_speed_vars[3] = {&KP_v, &KI_v, &KD_v};
+static float* const pid_all_vars[6]   = {&KP_x, &KI_x, &KD_x, &KP_v, &KI_v, &KD_v};
 
 // ==================== 菜单状态变量 ====================
 static uint16 page = PAGE_HOME;     // 当前页面编号
 static uint8 arrow = 1;             // 当前光标位置（从1开始计数）
 static uint8 modified_order = 0;    // 0=普通浏览模式, 1=参数修改模式
 static uint8 modified_mode = 1;     // 修改状态机：1=选择参数, 2=*1倍率, 3=*10倍率, 4=*0.1倍率
-static uint8 current_mode = MODE_STEADY;  // 当前加载的模式
+// 当前只保留一组PID参数，无需模式切换
+
+// 设置页参数（负压电机占空比，对应 MOTOR_PWM_M）
+int16 fan_duty = 0;
 
 // 显示状态（用于减少不必要的刷新与闪烁）
 static uint16 last_displayed_page = 0xFFFF;
@@ -84,12 +88,13 @@ static uint8 get_item_count(uint16 page_id)
 {
     switch(page_id)
     {
-        case PAGE_HOME:         return 4;
-        case PAGE_MODE_SELECT:  return 4;
+        case PAGE_HOME:         return 3;
         case PAGE_PID_TYPE:     return 2;
+        case PAGE_SETTINGS:     return 2;
         case PAGE_PID_DIR:
         case PAGE_PID_SPEED:    return 3;
-        default:                return 1;   // ADC页、确认页等无菜单项
+        case PAGE_PID_ALL:      return 6;
+        default:                return 1;   // ADC页等无菜单项
     }
 }
 
@@ -100,18 +105,16 @@ static uint16 get_parent_page(uint16 page_id)
     {
         case PAGE_HOME:         return PAGE_HOME;
         case PAGE_ADC:
-        case PAGE_MODE_SELECT:  return PAGE_HOME;
         case PAGE_PID_TYPE:
-        case PAGE_MODE_STEADY:
-        case PAGE_MODE_ORDINARY:
-        case PAGE_MODE_FAST:    return PAGE_MODE_SELECT;
+        case PAGE_SETTINGS:     return PAGE_HOME;
         case PAGE_PID_DIR:
         case PAGE_PID_SPEED:    return PAGE_PID_TYPE;
+        case PAGE_PID_ALL:      return PAGE_HOME;
         default:                return PAGE_HOME;
     }
 }
 
-// 统一光标移动（修复原代码key_modified中UP/DOWN同向的bug）
+// 统一光标移动
 static void move_arrow(uint8 key)
 {
     uint8 count = get_item_count(page);
@@ -145,29 +148,26 @@ static void go_back(void)
 
 // ==================== 模式切换与参数保存 ====================
 
-// 根据模式索引加载对应的PID参数到活跃变量
-void switch_mode(uint8 mode)
+// 从备份加载PID参数到活跃变量
+void switch_mode(void)
 {
-    if(mode >= 3) return;
-    KP_x = mode_params[mode].kp_x;
-    KI_x = mode_params[mode].ki_x;
-    KD_x = mode_params[mode].kd_x;
-    KP_v = mode_params[mode].kp_v;
-    KI_v = mode_params[mode].ki_v;
-    KD_v = mode_params[mode].kd_v;
-    current_mode = mode;
+    KP_x = mode_param.kp_x;
+    KI_x = mode_param.ki_x;
+    KD_x = mode_param.kd_x;
+    KP_v = mode_param.kp_v;
+    KI_v = mode_param.ki_v;
+    KD_v = mode_param.kd_v;
 }
 
-// 保存当前活跃参数到指定模式存储区
-void save_current_param(uint8 mode)
+// 保存当前活跃参数到备份存储区
+void save_current_param(void)
 {
-    if(mode >= 3) return;
-    mode_params[mode].kp_x = KP_x;
-    mode_params[mode].ki_x = KI_x;
-    mode_params[mode].kd_x = KD_x;
-    mode_params[mode].kp_v = KP_v;
-    mode_params[mode].ki_v = KI_v;
-    mode_params[mode].kd_v = KD_v;
+    mode_param.kp_x = KP_x;
+    mode_param.ki_x = KI_x;
+    mode_param.kd_x = KD_x;
+    mode_param.kp_v = KP_v;
+    mode_param.ki_v = KI_v;
+    mode_param.kd_v = KD_v;
 }
 
 // ==================== 按键扫描 ====================
@@ -196,10 +196,14 @@ uint8 key_scan(void)
         default:                       break;
     }
 
-    // 第二路ADC判断功能键（复位/返回）
+    // 第二路ADC判断功能键（复位/返回/扩展快捷键）
+    // 第二路与第一路使用相同的电阻分压网络，故分压值一致
     switch(key_adc2 / 100)
     {
         case 5 : key_status = RST;     break;   // 约542
+        case 12: key_status = TWO;     break;   // 约1262  一键加载平稳模式
+        case 18: key_status = THREE;   break;   // 约1840  一键加载普通模式
+        case 24: key_status = FOUR;    break;   // 约2467  一键加载快速模式
         case 30: key_status = BACK;    break;   // 约3082
         default:                       break;
     }
@@ -224,15 +228,8 @@ void key_action(uint8 key)
         {
         case PAGE_HOME:
             if(arrow == 1)      enter_page(PAGE_ADC);
-            else if(arrow == 2) enter_page(PAGE_MODE_SELECT);
-            // arrow 3/4 (Start/Run) 在原代码中无OK响应，保持预留
-            break;
-
-        case PAGE_MODE_SELECT:
-            if(arrow == 1)      { switch_mode(MODE_STEADY);   enter_page(PAGE_MODE_STEADY); }
-            else if(arrow == 2) { switch_mode(MODE_ORDINARY); enter_page(PAGE_MODE_ORDINARY); }
-            else if(arrow == 3) { switch_mode(MODE_FAST);     enter_page(PAGE_MODE_FAST); }
-            else if(arrow == 4) { enter_page(PAGE_PID_TYPE); }
+            else if(arrow == 2) { enter_page(PAGE_PID_ALL); modified_order = 1; modified_mode = 1; }
+            else if(arrow == 3) { enter_page(PAGE_SETTINGS); modified_order = 1; modified_mode = 1; }
             break;
 
         case PAGE_PID_TYPE:
@@ -254,6 +251,31 @@ void key_action(uint8 key)
 // 支持四种修改倍率：选择模式 -> *1 -> *10 -> *0.1 -> 循环
 void key_modified(uint8 key)
 {
+    // Settings页面使用独立的简单修改逻辑（固定步长，无需倍率状态机）
+    if(page == PAGE_SETTINGS)
+    {
+        switch(key)
+        {
+        case UP:
+        case DOWN:
+            move_arrow(key);
+            break;
+        case LEFT:
+            if(arrow == 1)      base_speed -= 10;
+            else if(arrow == 2) fan_duty -= 10;
+            break;
+        case RIGHT:
+            if(arrow == 1)      base_speed += 10;
+            else if(arrow == 2) fan_duty += 10;
+            break;
+        case BACK:
+            modified_order = 0;
+            go_back();
+            break;
+        }
+        return;
+    }
+
     switch(key)
     {
     case UP:
@@ -283,7 +305,7 @@ void key_modified(uint8 key)
 
     case LEFT:
         // 倍率状态：2=*1, 3=*10, 4=*0.1
-        // 映射到value_add_or_sub的mode：1=-1, 2=+1, 3=-10, 4=+10, 5=-0.1, 6=+0.1
+        // 映射到value_add_or_sub的mode：1=+1, 2=-1, 3=+10, 4=-10, 5=+0.1, 6=-0.1
         if(modified_mode >= 2)
         {
             value_add_or_sub(page, arrow, (modified_mode - 2) * 2 + 1);
@@ -304,30 +326,41 @@ void key_modified(uint8 key)
 // PID参数值加减函数
 // page: 当前页面(PAGE_PID_DIR=方向PID, PAGE_PID_SPEED=速度PID)
 // arrow: 当前选中的参数行(1=Kp, 2=Ki, 3=Kd)
-// mode: 加减模式(1=-1, 2=+1, 3=-10, 4=+10, 5=-0.1, 6=+0.1)
+// mode: 加减模式(1=+1, 2=-1, 3=+10, 4=-10, 5=+0.1, 6=-0.1)
 void value_add_or_sub(uint32 page, uint8 arrow, uint8 mode)
 {
     // 步长映射表（index对应mode值，LEFT增加/RIGHT减少，保持原操作习惯）
     static const float delta_map[7] = {0.0f, 1.0f, -1.0f, 10.0f, -10.0f, 0.1f, -0.1f};
     float delta;
+    float* const* target = NULL;
+    uint8 max_arrow = 0;
 
     if(mode < 1 || mode > 6) return;
-    if(arrow < 1 || arrow > 3) return;
 
     delta = delta_map[mode] * 0.10f;
 
     // 通过指针数组直接修改对应参数，避免冗长的switch-case
     if(page == PAGE_PID_DIR)
     {
-        *pid_dir_vars[arrow - 1] += delta;
+        target = pid_dir_vars;
+        max_arrow = 3;
     }
     else if(page == PAGE_PID_SPEED)
     {
-        *pid_speed_vars[arrow - 1] += delta;
+        target = pid_speed_vars;
+        max_arrow = 3;
+    }
+    else if(page == PAGE_PID_ALL)
+    {
+        target = pid_all_vars;
+        max_arrow = 6;
     }
 
-    // 活跃参数直接供控制环使用，保存到当前模式
-    save_current_param(current_mode);
+    if(target && arrow >= 1 && arrow <= max_arrow)
+    {
+        *target[arrow - 1] += delta;
+        save_current_param();
+    }
 }
 
 // ==================== 显示绘制函数 ====================
@@ -339,9 +372,13 @@ static void menu_draw_content(void)
     {
     case PAGE_HOME:
         ips114_show_string(2, 16 * 0, "Inductance");
-        ips114_show_string(2, 16 * 1, "Settings");
-        ips114_show_string(2, 16 * 2, "Start");
-        ips114_show_string(2, 16 * 3, "Run");
+        ips114_show_string(2, 16 * 1, "PID");
+        ips114_show_string(2, 16 * 2, "Settings");
+        break;
+
+    case PAGE_SETTINGS:
+        ips114_show_string(2, 0,  "Speed:");    ips114_show_uint16(90, 0,  (uint16)base_speed);
+        ips114_show_string(2, 16, "Fan:");      ips114_show_uint16(90, 16, (uint16)fan_duty);
         break;
 
     case PAGE_ADC:
@@ -351,34 +388,13 @@ static void menu_draw_content(void)
         ips114_show_string(2, 48, "ADC4:"); ips114_show_uint16(60, 48, (uint16)adc_filted[3]);
         break;
 
-    case PAGE_MODE_SELECT:
-        ips114_show_string(20, 16 * 0, "Load Steady");
-        ips114_show_string(20, 16 * 1, "Load Ordinary");
-        ips114_show_string(20, 16 * 2, "Load Fast");
-        ips114_show_string(20, 16 * 3, "PID Params");
-        break;
-
-    case PAGE_MODE_STEADY:
-    case PAGE_MODE_ORDINARY:
-    case PAGE_MODE_FAST:
-        // 模式加载确认页（空白，原设计如此）
-        break;
-
-    case PAGE_PID_TYPE:
-        ips114_show_string(20, 16 * 0, "Direction PID");
-        ips114_show_string(20, 16 * 1, "Speed PID");
-        break;
-
-    case PAGE_PID_DIR:
+    case PAGE_PID_ALL:
         ips114_show_string(2, 0,  "KP_x"); ips114_show_float(60, 0,  KP_x, 1, 2);
         ips114_show_string(2, 16, "KI_x"); ips114_show_float(60, 16, KI_x, 1, 2);
         ips114_show_string(2, 32, "KD_x"); ips114_show_float(60, 32, KD_x, 1, 2);
-        break;
-
-    case PAGE_PID_SPEED:
-        ips114_show_string(2, 0,  "KP_v"); ips114_show_float(60, 0,  KP_v, 1, 2);
-        ips114_show_string(2, 16, "KI_v"); ips114_show_float(60, 16, KI_v, 1, 2);
-        ips114_show_string(2, 32, "KD_v"); ips114_show_float(60, 32, KD_v, 1, 2);
+        ips114_show_string(2, 48, "KP_v"); ips114_show_float(60, 48, KP_v, 1, 2);
+        ips114_show_string(2, 64, "KI_v"); ips114_show_float(60, 64, KI_v, 1, 2);
+        ips114_show_string(2, 80, "KD_v"); ips114_show_float(60, 80, KD_v, 1, 2);
         break;
     }
 }
@@ -394,7 +410,7 @@ static void menu_draw_cursor(void)
         // 浏览模式：仅在光标位置变化时更新，减少闪烁
         if(arrow != last_displayed_arrow || page != last_displayed_page)
         {
-            if(last_displayed_arrow > 0 && last_displayed_arrow <= 4)
+            if(last_displayed_arrow > 0 && last_displayed_arrow <= 6)
             {
                 ips114_show_string(0, 16 * (last_displayed_arrow - 1), "  ");
             }
@@ -411,10 +427,10 @@ static void menu_draw_cursor(void)
         }
 
         // 显示当前修改倍率
-        if(modified_mode == 2)      ips114_show_string(200, 0, "*1   ");
-        else if(modified_mode == 3) ips114_show_string(200, 0, "*10  ");
-        else if(modified_mode == 4) ips114_show_string(200, 0, "*0.1 ");
-        else                        ips114_show_string(200, 0, "     ");
+        if(modified_mode == 2)      ips114_show_string(180, 0, "*1   ");
+        else if(modified_mode == 3) ips114_show_string(180, 0, "*10  ");
+        else if(modified_mode == 4) ips114_show_string(180, 0, "*0.1 ");
+        else                        ips114_show_string(180, 0, "     ");
 
         // 显示当前行标记：选择模式用">"，修改模式用"="
         if(modified_mode == 1)
@@ -445,12 +461,12 @@ void menu(void)
         last_key = 0;
     }
 
-    // RST键（复位键）处理：短按复位屏幕和菜单状态
+    // RST键处理：仅清屏刷新，保持当前页面和光标状态
     if(key == RST && key != last_key)
     {
-        enter_page(PAGE_HOME);
-        modified_order = 0;
-        modified_mode = 1;
+        ips114_clear(RGB565_WHITE);
+        last_displayed_page = 0xFFFF;   // 强制下次重绘
+        last_displayed_arrow = 0xFF;
         last_key = key;
         return;
     }
@@ -458,16 +474,13 @@ void menu(void)
     // 按键按下沿检测：有按键且与上次不同
     if(key != last_key && key != 0)
     {
-        if(modified_order == 0)
-        {
-            key_action(key);
-        }
-        else
-        {
-            key_modified(key);
-        }
+        // 全局快捷键：任意页面一键加载模式（第二路ADC）
+        if(key == TWO)        switch_mode();
+        else if(modified_order == 0) key_action(key);
+        else                         key_modified(key);
+
+        last_key = key;
     }
-    last_key = key;
 
     // 页面切换检测：仅在切换时执行清屏，避免每帧闪烁
     if(page != last_displayed_page)

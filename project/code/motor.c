@@ -12,11 +12,14 @@ int16 target_speed_R = 0;       // 右轮目标速度
 int16 real_speed_L = 0;         // 左轮实际速度（编码器滤波后）
 int16 real_speed_R = 0;         // 右轮实际速度（编码器滤波后）
 
-float alpha = 0.4;              // 编码器速度低通滤波系数
+int16 base_speed = 0;       // 基础目标速度
+
+int32 Distance = 0;
+
+float alpha = 0.65;              // 编码器速度低通滤波系数
 
 LowPassFilter filt_encoder_L;   // 左轮编码器低通滤波器
 LowPassFilter filt_encoder_R;   // 右轮编码器低通滤波器
-
 
 // 函数名: motor_control
 // 功能: 电机控制函数（速度环输出执行）
@@ -24,11 +27,12 @@ LowPassFilter filt_encoder_R;   // 右轮编码器低通滤波器
 //       PWM引脚控制占空比，实现电机正反转调速。
 void motor_control(void)
 {
-    static int16 speed_outL = 0,    // 左轮速度PID输出
-                 speed_outR = 0;    // 右轮速度PID输出
+    int16 speed_outL = 0,    // 左轮速度PID输出
+          speed_outR = 0;    // 右轮速度PID输出
            
-    speed_outL = PID_L(target_speed_L, real_speed_L);   // 左轮速度PID计算
-    speed_outR = PID_R(target_speed_R, real_speed_R);   // 右轮速度PID计算
+    // 根据宏定义选择使用增量式PID或位置式PID
+    speed_outL = PID_L_pos();   // 左轮位置式速度PID计算（含快速制动与坡道保持）
+    speed_outR = PID_R_pos();   // 右轮位置式速度PID计算（含快速制动与坡道保持）
     
     // 串口打印调试数据：目标速度、实际速度、PID输出
 //    sprintf(uart, "%d,%d,%d\r\n", target_speed_L, real_speed_L, speed_outL);
@@ -38,12 +42,12 @@ void motor_control(void)
     // 左轮控制
     if(speed_outL >= 0)             // 正转（速度为正）
     {
-        gpio_set_level(MOTOR_DIR_L, GPIO_LOW);      // DIR输出低电平
+        gpio_set_level(MOTOR_DIR_L, GPIO_HIGH);      // DIR输出低电平
         pwm_set_duty(MOTOR_PWM_L, speed_outL);      // 设置正占空比
     }
     else                            // 反转（速度为负）
     {
-        gpio_set_level(MOTOR_DIR_L, GPIO_HIGH);     // DIR输出高电平
+        gpio_set_level(MOTOR_DIR_L, GPIO_LOW);     // DIR输出高电平
         pwm_set_duty(MOTOR_PWM_L, -speed_outL);     // 设置正占空比（取绝对值）
     }
     
@@ -67,8 +71,11 @@ void motor_control(void)
 //       然后清零编码器计数，为下一次采样做准备。
 void read_encoder(void)
 {
-    static int16 encoder_L = 0,     // 左轮编码器累计值
-                 encoder_R = 0;     // 右轮编码器累计值
+    int16 encoder_L = 0,     // 左轮编码器累计值
+          encoder_R = 0;     // 右轮编码器累计值
+	
+	static int32 distance_L = 0,
+				 distance_R = 0;			 
     
     encoder_L = -encoder_get_count(ENCODER_DIR_L);      // 读取左轮编码器计数值（取反）
     encoder_R = encoder_get_count(ENCODER_DIR_R);       // 读取右轮编码器计数值
@@ -83,12 +90,14 @@ void read_encoder(void)
 //    }
 
     // 低通滤波，得到平滑速度
-    real_speed_L = lowpass_update(&filt_encoder_L, encoder_L);  // 左轮速度低通滤波
-    real_speed_R = lowpass_update(&filt_encoder_R, encoder_R);  // 右轮速度低通滤波
+    real_speed_L = (int16)lowpass_update(&filt_encoder_L, (float)encoder_L);  // 左轮速度低通滤波
+    real_speed_R = (int16)lowpass_update(&filt_encoder_R, (float)encoder_R);  // 右轮速度低通滤波
     
-//    ldistance = ldistance + L_speed;     
-//    rdistance = rdistance + R_speed;            
-//    distance = (ldistance + rdistance) / 2;
+    distance_L += real_speed_L;     
+    distance_R += real_speed_R;            
+    Distance = (distance_L + distance_R) / 2;
+	
+	
 //    if(menu_flag == 4)
 //    {
 //        test_ldistance = test_ldistance + L_speed;
@@ -119,7 +128,9 @@ void motor_init(void)
 void encoder_init(void)
 {
     encoder_dir_init(ENCODER_DIR_L, ENCODER_DIR_DIR_L, ENCODER_DIR_PULSE_L);      
-    encoder_dir_init(ENCODER_DIR_R, ENCODER_DIR_DIR_R, ENCODER_DIR_PULSE_R);    
+    encoder_dir_init(ENCODER_DIR_R, ENCODER_DIR_DIR_R, ENCODER_DIR_PULSE_R);   
+	encoder_clear_count(ENCODER_DIR_L);     // 清除左轮编码器计数值
+    encoder_clear_count(ENCODER_DIR_R);     // 清除右轮编码器计数值
     lowpass_init(&filt_encoder_L, alpha);   // 初始化左轮速度低通滤波
     lowpass_init(&filt_encoder_R, alpha);   // 初始化右轮速度低通滤波
 }
