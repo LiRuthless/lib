@@ -10,8 +10,7 @@
 uint8 uart[32];     		// 串口数据发送缓冲区
 uint8 dat[32];
 
-
-int32 track_out = 0;     // 方向控制输出（由循迹PID计算）
+int16 track_out = 0;     // 方向控制输出（由循迹PID计算）
 
 bit Start = 0;              // 启动标志位
 bit Run = 0;                // 运行标志位
@@ -27,7 +26,6 @@ void All_init(void)
 	uart_rx_start_buff(UART_1);
 	
 	iap_init();
-
     
     ips114_init();          // 初始化IPS114显示屏
 //    key_init();             // 按键初始化
@@ -35,11 +33,17 @@ void All_init(void)
     front_adc_init();       // 初始化前置四路ADC
     encoder_init();         // 初始化编码器
     motor_init();           // 初始化电机PWM
-
+	
+	imu660rb_init();
+	
     pit_ms_init(PIT_TR, 50);    // 初始化50ms定时中断（循迹控制）
     pit_ms_init(PIT_SP, 10);    // 初始化10ms定时中断（速度环）
 }
 
+
+// 函数名: uart_adjust
+// 功能: 串口无线调参解析
+// 说明: 通过无线串口接收指令，解析并修改KP_v、KI_v、KP_x、KI_x等PID参数
 void uart_adjust(void)
 {
 	static float figure = 0.0;

@@ -66,7 +66,7 @@ static uint8 modified_mode = 1;     // 修改状态机：1=选择参数, 2=*1倍
 // 当前只保留一组PID参数，无需模式切换
 
 // 设置页参数（负压电机占空比，对应 MOTOR_PWM_M）
-int16 fan_duty = 0;
+
 
 // 显示状态（用于减少不必要的刷新与闪烁）
 static uint16 last_displayed_page = 0xFFFF;

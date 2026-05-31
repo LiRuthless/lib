@@ -26,7 +26,7 @@ float PID_outR = 0.0f;              // PID总输出
 // 返回值: 舵机/方向控制输出，范围[-2.7, 2.7]
 // 说明: 采用改进型位置式PID，增加了非线性P2项（K2P_x * error * |error|），
 //       在小偏差时响应柔和，大偏差时快速修正。
-int32 PID_track(void)
+int16 PID_track(void)
 {   
     static float P_out = 0.0,       // P环节输出
                  P2_out = 0.0,      // P2环节输出（非线性项）
@@ -64,7 +64,7 @@ int32 PID_track(void)
 // 返回值: 左轮电机PWM控制增量输出，范围[-5000, 5000]
 // 说明: 采用增量式PID算法，输出为PWM增量，抗积分饱和。
 //       微分项使用二阶差分：error - 2*Last_error + Previous_error
-int32 PID_L(void)
+int16 PID_L(void)
 {
     static float P_outL = 0.0,      // P环节输出
                  I_outL = 0.0,      // I环节输出
@@ -102,7 +102,7 @@ int32 PID_L(void)
 //       real_speed_R   - 右轮实际速度（编码器反馈）
 // 返回值: 右轮电机PWM控制增量输出，范围[-5000, 5000]
 // 说明: 与PID_L对称，实现右轮独立速度闭环控制。
-int32 PID_R(void)
+int16 PID_R(void)
 {
     static float P_outR = 0.0,      // P环节输出
                  I_outR = 0.0,      // I环节输出
@@ -138,7 +138,7 @@ int32 PID_R(void)
 // 说明: 采用位置式PID算法，直接输出PWM控制量。
 //       当目标速度为0且实际速度较大时，输出反向制动力矩快速停车。
 //       内置死区前馈，target=0时不加偏置，确保能真正停车。
-int32 PID_L_pos(void)
+int16 PID_L_pos(void)
 {
     static int32 Last_errorL = 0;       // 上次偏差
     
@@ -193,7 +193,7 @@ int32 PID_L_pos(void)
 // 说明: 与PID_L_pos对称，采用位置式PID算法实现右轮独立速度闭环控制。
 //       当目标速度为0且实际速度较大时，主动反向制动快速停车。
 //       内置死区前馈，target=0时不加偏置，确保能真正停车。
-int32 PID_R_pos(void)
+int16 PID_R_pos(void)
 {
     static int32 Last_errorR = 0;       // 上次偏差
     

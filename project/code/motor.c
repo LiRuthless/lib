@@ -12,8 +12,8 @@ int16 target_speed_R = 0;       // 右轮目标速度
 int16 real_speed_L = 0;         // 左轮实际速度（编码器滤波后）
 int16 real_speed_R = 0;         // 右轮实际速度（编码器滤波后）
 
-int16 base_speed = 0;       // 基础目标速度
-
+int16 base_speed = 0;      		// 基础目标速度
+int16 fan_duty = 0;
 int32 Distance = 0;
 
 float alpha = 0.65;              // 编码器速度低通滤波系数

@@ -23,10 +23,10 @@ extern float PID_outR;              // PID总输出
 #define MOTOR_DEAD_ZONE             (1250)
 
 
-int32 PID_track(void);                             // 循迹PID
-int32 PID_L(void);          // 左轮增量式速度PID
-int32 PID_R(void);          // 右轮增量式速度PID
-int32 PID_L_pos(void);      // 左轮位置式速度PID（含快速制动与坡道保持）
-int32 PID_R_pos(void);      // 右轮位置式速度PID（含快速制动与坡道保持）
+int16 PID_track(void);                             // 循迹PID
+int16 PID_L(void);          // 左轮增量式速度PID
+int16 PID_R(void);          // 右轮增量式速度PID
+int16 PID_L_pos(void);      // 左轮位置式速度PID（含快速制动与坡道保持）
+int16 PID_R_pos(void);      // 右轮位置式速度PID（含快速制动与坡道保持）
 
 #endif

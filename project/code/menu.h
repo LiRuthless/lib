@@ -33,9 +33,6 @@
 // 运行模式索引
 #define MODE_STEADY     0
 
-// 全局变量
-extern int16 fan_duty;    // 负压电机占空比（对应 MOTOR_PWM_M）
-
 // 函数声明
 void switch_mode(void);                             // 从备份加载参数
 void save_current_param(void);                      // 保存当前参数到备份

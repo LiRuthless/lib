@@ -26,6 +26,7 @@ extern int16 target_speed_R;    // 右轮目标速度
 extern int16 real_speed_L;      // 左轮实际速度
 extern int16 real_speed_R;      // 右轮实际速度
 extern int16 base_speed;	    // 基础目标速度
+extern int16 fan_duty;
 
 extern float alpha;             // 低通滤波系数
 

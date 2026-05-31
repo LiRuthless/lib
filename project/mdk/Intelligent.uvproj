@@ -765,6 +765,16 @@
               <FilePath>..\code\config.h</FilePath>
             </File>
             <File>
+              <FileName>control.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\control.c</FilePath>
+            </File>
+            <File>
+              <FileName>control.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\control.h</FilePath>
+            </File>
+            <File>
               <FileName>pid.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\code\pid.c</FilePath>
@@ -773,16 +783,6 @@
               <FileName>pid.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\code\pid.h</FilePath>
-            </File>
-            <File>
-              <FileName>menu.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\code\menu.c</FilePath>
-            </File>
-            <File>
-              <FileName>menu.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\code\menu.h</FilePath>
             </File>
             <File>
               <FileName>motor.c</FileName>
@@ -805,6 +805,36 @@
               <FilePath>..\code\adc.h</FilePath>
             </File>
             <File>
+              <FileName>gyroscope.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\gyroscope.c</FilePath>
+            </File>
+            <File>
+              <FileName>gyroscope.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\gyroscope.h</FilePath>
+            </File>
+            <File>
+              <FileName>menu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\menu.c</FilePath>
+            </File>
+            <File>
+              <FileName>menu.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\menu.h</FilePath>
+            </File>
+            <File>
+              <FileName>eeprom.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\eeprom.c</FilePath>
+            </File>
+            <File>
+              <FileName>eeprom.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\eeprom.h</FilePath>
+            </File>
+            <File>
               <FileName>filter.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\code\filter.c</FilePath>
@@ -813,16 +843,6 @@
               <FileName>filter.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\code\filter.h</FilePath>
-            </File>
-            <File>
-              <FileName>control.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\code\control.c</FilePath>
-            </File>
-            <File>
-              <FileName>control.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\code\control.h</FilePath>
             </File>
           </Files>
         </Group>

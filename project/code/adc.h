@@ -16,7 +16,7 @@ extern int16 track_error;
 //extern uint16 adc3;
 //extern uint16 adc4;
 
-int32 get_track_error(void);        // 计算循迹误差
+int16 get_track_error(void);        // 计算循迹误差
 void front_adc_init(void);      // 初始化四路前置ADC
 void read_adc(void);            // 读取并滤波四路ADC
 
