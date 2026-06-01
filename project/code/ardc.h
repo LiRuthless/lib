@@ -17,8 +17,8 @@ typedef struct {
     float kp;       // 控制器增益 = ω_c
 } ADRC_Controller;
 
-extern ADRC_Controller adrc_L;  // 左轮 ADRC
-extern ADRC_Controller adrc_R;  // 右轮 ADRC
+extern ADRC_Controller adrc_ctrl_L;  // 左轮 ADRC
+extern ADRC_Controller adrc_ctrl_R;  // 右轮 ADRC
 
 int16 ADRC_L(void);  // 左轮 ADRC 速度环
 int16 ADRC_R(void);  // 右轮 ADRC 速度环

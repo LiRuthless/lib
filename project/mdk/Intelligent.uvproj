@@ -805,6 +805,16 @@
               <FilePath>..\code\adc.h</FilePath>
             </File>
             <File>
+              <FileName>ardc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\ardc.c</FilePath>
+            </File>
+            <File>
+              <FileName>ardc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\ardc.h</FilePath>
+            </File>
+            <File>
               <FileName>gyroscope.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\code\gyroscope.c</FilePath>

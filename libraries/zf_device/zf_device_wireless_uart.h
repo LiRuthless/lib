@@ -55,7 +55,7 @@
 #define WIRELESS_UART_BUAD_RATE    ( 115200 )          		// 无线串口对应使用的串口波特率
 #define WIRELESS_UART_TX_PIN       ( UART1_RX_P30 )    		// 无线串口对应模块的 TX 要接到单片机的 RX
 #define WIRELESS_UART_RX_PIN       ( UART1_TX_P31 )    		// 无线串口对应模块的 RX 要接到单片机的 TX
-#define WIRELESS_UART_RTS_PIN      ( IO_P36 )          		// 无线串口对应模块的 RTS 引脚
+#define WIRELESS_UART_RTS_PIN      ( IO_P47 )          		// 无线串口对应模块的 RTS 引脚
 
 
 // ------------------------------------ 自动波特率 ------------------------------------

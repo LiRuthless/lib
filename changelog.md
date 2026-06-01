@@ -84,5 +84,23 @@ speed_outR = PID_R_pos();   // 改回PI
 ## 后续建议
 
 1. **b0在线标定**：新增调试模式，固定PWM输出2000，测量速度响应斜率，自动标定b0
-2. **ADRC参数调参**：将 `adrc_L.b0`、`adrc_L.kp` 等接入 `menu.c` 调参菜单
+2. **ADRC参数调参**：将 `adrc_ctrl_L.b0`、`adrc_ctrl_L.kp` 等接入 `menu.c` 调参菜单
 3. **采样率提升**：若需更高带宽，将 `pit_ms_init(PIT_SP, 10)` 改为 `pit_ms_init(PIT_SP, 2)`，并同步调整 `beta1`、`beta2`、`kp`（参见ARDC_plan.md方案B）
+
+---
+
+## 2025-06-01 编译修复
+
+### 修复内容
+
+1. **`project/mdk/Intelligent.uvproj`**
+   - 将 `project/code/ardc.c`、`project/code/ardc.h` 加入项目 `code` 文件组，解决链接错误 `L127: UNRESOLVED EXTERNAL SYMBOL (ADRC_L / ADRC_R)`
+
+2. **`project/code/ardc.c` / `project/code/ardc.h`**
+   - 重命名全局变量 `adrc_L` → `adrc_ctrl_L`、`adrc_R` → `adrc_ctrl_R`
+   - **原因**：Keil C251 编译器/链接器**默认大小写不敏感**，导致变量 `adrc_L` 与函数 `ADRC_L` 被视为同一符号，产生链接错误 `L104: MULTIPLE PUBLIC DEFINITIONS`
+
+### 编译结果
+
+- 编译错误（`error Cxxx`）：**0 个**
+- 链接错误（`ERROR Lxxx`）：仅剩 `L250`（Keil C251 评估版代码大小限制，与项目代码无关）

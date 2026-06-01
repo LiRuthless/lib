@@ -55,7 +55,7 @@ void clock_init (uint32 clock)                                              // ∫
 //    while (!(XOSCCR & 1));  // µ»¥˝ ±÷”Œ»∂®
 //    CLKDIV = 0x00;          //  ±÷”≤ª∑÷∆µ
 //    CLKSEL = 0x01;          // —°‘ÒÕ‚≤øæß’Ò
-//    CLKDIV = 0x00;          // 40MHz÷˜∆µ£¨∑÷∆µ…Ë÷√
+//	CLKDIV = 0x00;          // 40MHz÷˜∆µ£¨∑÷∆µ…Ë÷√
 	
 	system_delay_init();    // —” ±∫Ø ˝≥ı ºªØ
 
