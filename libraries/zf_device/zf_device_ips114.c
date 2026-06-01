@@ -263,8 +263,8 @@ void ips114_show_string (uint16 x,uint16 y,const char dat[])
 {
 	uint16 j = 0;
 	
-//    zf_assert(x < ips114_x_max);
-//    zf_assert(y < ips114_y_max);
+    zf_assert(x < ips114_x_max);
+    zf_assert(y < ips114_y_max);
 
     while(dat[j] != '\0')
     {

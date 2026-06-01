@@ -6,6 +6,7 @@
 // ============================================================
 
 #include "config.h"
+#include "ardc.h"
 
 int16 target_speed_L = 0;       // 左轮目标速度
 int16 target_speed_R = 0;       // 右轮目标速度
@@ -30,9 +31,9 @@ void motor_control(void)
     int16 speed_outL = 0,    // 左轮速度PID输出
           speed_outR = 0;    // 右轮速度PID输出
            
-    // 根据宏定义选择使用增量式PID或位置式PID
-    speed_outL = PID_L_pos();   // 左轮位置式速度PID计算（含快速制动与坡道保持）
-    speed_outR = PID_R_pos();   // 右轮位置式速度PID计算（含快速制动与坡道保持）
+    // 速度环：采用ADRC替代原位置式PID（保守方案A：100Hz, b0=8, ωc=31.4, ωo=94.2）
+    speed_outL = ADRC_L();      // 左轮ADRC速度环
+    speed_outR = ADRC_R();      // 右轮ADRC速度环
     
     // 串口打印调试数据：目标速度、实际速度、PID输出
 //    sprintf(uart, "%d,%d,%d\r\n", target_speed_L, real_speed_L, speed_outL);
