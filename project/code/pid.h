@@ -10,8 +10,8 @@ extern float K2P_x;     // 方向环非线性二次比例系数
 extern float KI_x;      // 方向环积分系数
 extern float KD_x;      // 方向环微分系数
 
-extern float PID_outL;              // PID总输出
-extern float PID_outR;              // PID总输出
+extern float PID_outL;              // 速度环控制器总输出（历史变量名，兼容PID/ADRC，供调试打印与ESO反馈）
+extern float PID_outR;              // 速度环控制器总输出（历史变量名，兼容PID/ADRC，供调试打印与ESO反馈）
 
 #define MAX_DIR_OUT                 (2000)
 #define MAX_SPD_OUT                 (6000)
