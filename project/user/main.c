@@ -28,7 +28,7 @@ void main()
 	
     KP_x  = 0.24;       // 方向环比例系数
     K2P_x = 0.00;       // 方向环非线性系数
-    KD_x  = 0.04;       // 方向环微分系数
+    KD_x  = 0.08;       // 方向环微分系数
 
     base_speed = 600;   // 设置基础速度
     fan_duty = 6000;       // 初始化负压电机占空比为60%占空比
@@ -43,14 +43,14 @@ void main()
         
 //        menu();  // 菜单处理函数，包含按键扫描和功能选择
 		
-		sprintf(uart,"%d,%d,%.2f,",target_speed_L,real_speed_L,PID_outL);
-	    uart_write_buffer(UART_1,uart,strlen(uart));
-		
-		sprintf(uart,"%d,%d,%.2f\n",target_speed_R,real_speed_R,PID_outR);
- 	    uart_write_buffer(UART_1,uart,strlen(uart));
+//		sprintf(uart,"%d,%d,%.2f,",target_speed_L,real_speed_L,PID_outL);
+//	    uart_write_buffer(UART_1,uart,strlen(uart));
+//		
+//		sprintf(uart,"%d,%d,%.2f\n",target_speed_R,real_speed_R,PID_outR);
+// 	    uart_write_buffer(UART_1,uart,strlen(uart));
 
 //		uart_adjust();
-		system_delay_ms(100);
+//		system_delay_ms(100);
     }
 }
 
@@ -58,9 +58,10 @@ void main()
 
 void pit_track (void)
 {
-    speed_test();
+//    speed_test();
 //	speed_test2();
 //	adc_test();
+	gyro_test();
 	
 }                                                       
 

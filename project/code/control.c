@@ -16,14 +16,25 @@ static uint16 cnt = 0;
 
 	
     cnt++;
-    if(cnt >= 80)               // 80 * 10ms = 800ms
+//    if(cnt >= 80)               // 80 * 10ms = 800ms
+//    {
+//        cnt = 0;
+//        if(base_speed != 1000){
+//            base_speed =1000;
+//        }
+//        else{
+//            base_speed = 600;
+//        }
+//    }
+//	
+	    if(cnt >= 80)               // 80 * 10ms = 800ms
     {
         cnt = 0;
-        if(base_speed != 1000){
-            base_speed =1000;
+        if(base_speed != 3000){
+            base_speed =3000;
         }
         else{
-            base_speed = 600;
+            base_speed = 1500;
         }
     }
 	target_speed_L = base_speed;
@@ -96,12 +107,24 @@ static uint16 cnt = 0;
 
 }
 
-// 函数名: track_test
+// 函数名: gyro_test
 // 功能: 循迹测试（预留）
 // 说明: 预留接口，可用于单独测试循迹功能
-void track_test(void)
+void gyro_test(void)
 {
-
+	imu660rb_get_gyro();
+	
+	gyro_x = imu660rb_gyro_transition(imu660rb_gyro_x);
+	gyro_y = imu660rb_gyro_transition(imu660rb_gyro_y);
+	gyro_z = imu660rb_gyro_transition(imu660rb_gyro_z);
+	
+	sprintf(uart,"%f,%f,%f,",gyro_x,gyro_y,gyro_z);
+	uart_write_buffer(UART_1,uart,strlen(uart));
+		
+	sprintf(uart,"%d,%d,%d\n",imu660rb_gyro_x,imu660rb_gyro_y,imu660rb_gyro_z);
+ 	uart_write_buffer(UART_1,uart,strlen(uart));
+	
+	
 }
 
 // 函数名: adc_test
