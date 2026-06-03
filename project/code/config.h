@@ -19,10 +19,12 @@ extern uint8 uart[32];      // 串口数据发送缓冲区
 extern uint8 dat[32];
 extern bit Start;           // 启动标志位
 extern bit Run;             // 运行标志位
-extern int16 track_out;     // 方向控制输出
+extern int16 battery;
 
 void All_init(void);        // 系统初始化
 void uart_adjust(void);
+void key_start(void);
+
 void pit_speed (void);      // 速度环中断服务函数
 void pit_track (void);      // 循迹控制中断服务函数
 

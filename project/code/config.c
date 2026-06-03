@@ -10,7 +10,7 @@
 uint8 uart[32];     		// 串口数据发送缓冲区
 uint8 dat[32];
 
-int16 track_out = 0;     // 方向控制输出（由循迹PID计算）
+int16 battery = 0;
 
 bit Start = 0;              // 启动标志位
 bit Run = 0;                // 运行标志位
@@ -26,9 +26,12 @@ void All_init(void)
 	uart_rx_start_buff(UART_1);
 	
 	iap_init();
+	
+	adc_init(ADC_CH11_P03, ADC_12BIT);				//电源电压
+	gpio_init(IO_P10, GPO, 0, GPO_PUSH_PULL);		//蜂鸣器
     
     ips114_init();          // 初始化IPS114显示屏
-//    key_init();             // 按键初始化
+	key_init();             // 按键初始化
     
     front_adc_init();       // 初始化前置四路ADC
     encoder_init();         // 初始化编码器
@@ -40,6 +43,56 @@ void All_init(void)
     pit_ms_init(PIT_SP, 10);    // 初始化10ms定时中断（速度环）
 }
 
+
+void key_start(void)
+{
+	static uint8 last_key = 1; 		 // 上一次电平
+	static battery_low = 0;
+	uint8 cur_key = 1;
+	
+	cur_key = gpio_get_level(IO_P22);
+
+	if(last_key && !cur_key){		 // 检测到下降沿
+		Start = !Start;
+	}
+	
+	last_key = cur_key;
+	
+//	sprintf(uart,"%d,%d\n",cur_key, Start);
+// 	uart_write_buffer(UART_1,uart,strlen(uart));
+
+	battery = adc_mean_filter_convert(ADC_CH11_P03, 5);
+	
+//	sprintf(uart,"%d\n",battery);
+// 	uart_write_buffer(UART_1,uart,strlen(uart));
+	
+//	if(!battery_low)
+//	{
+//		if(battery < 1170)
+//			battery_low = 1;
+//	}
+//	else
+//	{
+//		if(battery > 1210)
+//			battery_low = 0;
+//	}
+//	
+//	while( battery_low )		//max1308-12.6v  min1182-11.4  1192-11.5
+//	{
+//		P10 = 1;
+//		system_delay_ms(100);
+//		P10 = 0;
+//		system_delay_ms(100);
+//		
+//		Start = 0;
+//	}
+	
+	if( Start )
+	{
+		PID_outL = 0.0;
+		PID_outR = 0.0;
+	}
+}
 
 // 函数名: uart_adjust
 // 功能: 串口无线调参解析

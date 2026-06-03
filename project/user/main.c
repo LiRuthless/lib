@@ -7,7 +7,7 @@
 
 #include "config.h"
 
-
+uint32 bb = 0;
 
 // 函数名: main
 // 功能: 主函数入口
@@ -15,7 +15,6 @@ void main()
 {
     clock_init(SYSTEM_CLOCK_40M);       // 设置系统时钟为40MHz
 
-    // 绑定定时器中断回调函数
     tim4_irq_handler = pit_speed;       // TIM4中断 -> 速度环处理
     tim3_irq_handler = pit_track;       // TIM3中断 -> 循迹控制处理
 
@@ -26,31 +25,35 @@ void main()
     KP_v  = 3.46;       // 速度环比例系数			//4.35  0.1
     KI_v  = 0.39;       // 速度环积分系数			//3.46  0.39
 	
-    KP_x  = 0.24;       // 方向环比例系数
-    K2P_x = 0.00;       // 方向环非线性系数
-    KD_x  = 0.08;       // 方向环微分系数
+	
+//    KP_x  = 0.2;       // 方向环比例系数				300--p0.2--d0.08
+//    K2P_x = 0.00;       // 方向环非线性系数
+//    KD_x  = 0.08;       // 方向环微分系数
 
-    base_speed = 600;   // 设置基础速度
+//    base_speed = 1000;   // 设置基础速度
     fan_duty = 6000;       // 初始化负压电机占空比为60%占空比
 
 
 
     // 主循环
     while(1)
-    {       
-//        adc1 = adc_mean_filter_convert(KEY_CHANNEL1, 3);
-//        adc2 = adc_mean_filter_convert(KEY_CHANNEL2, 3);
-        
-//        menu();  // 菜单处理函数，包含按键扫描和功能选择
+    {
+		key_start();
 		
-//		sprintf(uart,"%d,%d,%.2f,",target_speed_L,real_speed_L,PID_outL);
-//	    uart_write_buffer(UART_1,uart,strlen(uart));
-//		
-//		sprintf(uart,"%d,%d,%.2f\n",target_speed_R,real_speed_R,PID_outR);
-// 	    uart_write_buffer(UART_1,uart,strlen(uart));
+//	
+//      adc1 = adc_mean_filter_convert(KEY_CHANNEL1, 3);
+//      adc2 = adc_mean_filter_convert(KEY_CHANNEL2, 3);
+        
+//      menu();  // 菜单处理函数，包含按键扫描和功能选择
+				
+		sprintf(uart,"%d,%d,%.2f,",target_speed_L,real_speed_L,PID_outL);
+	    uart_write_buffer(UART_1,uart,strlen(uart));
+		
+		sprintf(uart,"%d,%d,%.2f,%d\n",target_speed_R,real_speed_R,PID_outR,bb);
+ 	    uart_write_buffer(UART_1,uart,strlen(uart));
 
 //		uart_adjust();
-//		system_delay_ms(100);
+		system_delay_ms(10);
     }
 }
 
@@ -58,11 +61,29 @@ void main()
 
 void pit_track (void)
 {
-//    speed_test();
-//	speed_test2();
-//	adc_test();
-	gyro_test();
+
+
+	bb++;
 	
+	if( Start )
+	{
+		track_test();
+//		speed_test();
+//		speed_test2();
+//		adc_test();
+//		gyro_test();
+		
+	}
+	
+	    // 未启动状态下停止电机
+    if( !Run || !Start )
+    {
+		target_speed_L = 0;
+		target_speed_R = 0;
+		pwm_set_duty(MOTOR_PWM_M, 1000); // 负压电机回默认占空比
+    }
+	
+
 }                                                       
 
 
