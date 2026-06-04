@@ -46,11 +46,17 @@ void main()
         
 //      menu();  // 菜单处理函数，包含按键扫描和功能选择
 				
-		sprintf(uart,"%d,%d,%.2f,",target_speed_L,real_speed_L,PID_outL);
-	    uart_write_buffer(UART_1,uart,strlen(uart));
+//		sprintf(uart,"%d,%d,%.2f,",target_speed_L,real_speed_L,PID_outL);
+//	    uart_write_buffer(UART_1,uart,strlen(uart));
+//		
+//		sprintf(uart,"%d,%d,%.2f,%d\n",target_speed_R,real_speed_R,PID_outR,bb);
+// 	    uart_write_buffer(UART_1,uart,strlen(uart));
 		
-		sprintf(uart,"%d,%d,%.2f,%d\n",target_speed_R,real_speed_R,PID_outR,bb);
- 	    uart_write_buffer(UART_1,uart,strlen(uart));
+//		sprintf(uart, "%d,%d,%d,%d,", adc_filted[0], adc_filted[1], adc_filted[2], adc_filted[3]);
+//		uart_write_buffer(UART_1,uart,strlen(uart));
+//	
+//		sprintf(uart,"%d,%d\n",track_error,track_out);
+//		uart_write_buffer(UART_1,uart,strlen(uart));
 
 //		uart_adjust();
 		system_delay_ms(10);
@@ -63,7 +69,7 @@ void pit_track (void)
 {
 
 
-	bb++;
+//	bb++;
 	
 	if( Start )
 	{

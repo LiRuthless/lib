@@ -17,9 +17,10 @@ void track_test(void)
 //	KP_x = 0.15;
 //	KD_x = 0.30;
 	
-	KP_x = 0.181;
-	KD_x = 0.1;
-//	KD_x = 0.261;
+//	KP_x = 0.181;
+//	KD_x = 0.1;
+	KP_x = 0.045;
+	KD_x = 0.14;
 
 
 	
@@ -49,6 +50,12 @@ void track_test(void)
         Run = 0;      // 清除启动标志
 		Start = 0;
     }
+	
+//	sprintf(uart, "%d,%d,%d,%d,", adc_filted[0], adc_filted[1], adc_filted[2], adc_filted[3]);
+// 	uart_write_buffer(UART_1,uart,strlen(uart));
+//	
+//	sprintf(uart,"%d,%d\n",track_error,track_out);
+// 	uart_write_buffer(UART_1,uart,strlen(uart));
     
     // 未启动状态下停止电机
 //    if( Run == 0 )
@@ -189,6 +196,9 @@ void gyro_test(void)
 void adc_test(void)
 {
 	read_adc();     // 读取四路电感ADC值 
+	
+	KP_x = 0.02;
+	KD_x = 0.36;
 	
 	track_error = get_track_error();
     track_out = PID_track();
