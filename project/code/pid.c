@@ -169,11 +169,10 @@ int16 PID_L_pos(void)
     
 //    D_outL = KD_v * (float)(errorL - Last_errorL);  // D环节：微分控制（当前KD_v=0，暂不使用）
     
-    PID_baseL = P_outL + I_outL + D_outL;             // 计算基础PID输出（不含死区前馈）
+    PID_outL = P_outL + I_outL + D_outL;             // 计算基础PID输出（不含死区前馈）
     
     // 根据目标速度方向叠加死区前馈偏置
     // target=0 时不加偏置，确保能真正停车
-    PID_outL = PID_baseL;
     if      (target_speed_L > 0) PID_outL += MOTOR_DEAD_ZONE;
     else if (target_speed_L < 0) PID_outL -= MOTOR_DEAD_ZONE;
     
@@ -224,11 +223,10 @@ int16 PID_R_pos(void)
     
 //    D_outR = KD_v * (float)(errorR - Last_errorR);  // D环节：微分控制（当前KD_v=0，暂不使用）
     
-    PID_baseR = P_outR + I_outR + D_outR;             // 计算基础PID输出（不含死区前馈）
+    PID_outR = P_outR + I_outR + D_outR;             // 计算基础PID输出（不含死区前馈）
     
     // 根据目标速度方向叠加死区前馈偏置
     // target=0 时不加偏置，确保能真正停车
-    PID_outR = PID_baseR;
     if      (target_speed_R > 0) PID_outR += MOTOR_DEAD_ZONE;
     else if (target_speed_R < 0) PID_outR -= MOTOR_DEAD_ZONE;
     

@@ -22,8 +22,8 @@ void main()
 
     WDT_CONTR = 0x21;                   // 使能看门狗，预分频4（约140ms溢出）
 
-    KP_v  = 3.46;       // 速度环比例系数			//4.35  0.1
-    KI_v  = 0.39;       // 速度环积分系数			//3.46  0.39
+    KP_v  = 15.0;       // 速度环比例系数			//15.0  0.85
+    KI_v  = 0.85;       // 速度环积分系数			//3.46  0.39!!!!!!!
 	
 	
 //    KP_x  = 0.2;       // 方向环比例系数				300--p0.2--d0.08
@@ -31,7 +31,7 @@ void main()
 //    KD_x  = 0.08;       // 方向环微分系数
 
 //    base_speed = 1000;   // 设置基础速度
-    fan_duty = 6000;       // 初始化负压电机占空比为60%占空比
+//    fan_duty = 6000;       // 初始化负压电机占空比为60%占空比
 
 
 
@@ -46,11 +46,11 @@ void main()
         
 //      menu();  // 菜单处理函数，包含按键扫描和功能选择
 				
-//		sprintf(uart,"%d,%d,%.2f,",target_speed_L,real_speed_L,PID_outL);
-//	    uart_write_buffer(UART_1,uart,strlen(uart));
-//		
-//		sprintf(uart,"%d,%d,%.2f,%d\n",target_speed_R,real_speed_R,PID_outR,bb);
-// 	    uart_write_buffer(UART_1,uart,strlen(uart));
+		sprintf(uart,"%d,%d,%f,",target_speed_L,real_speed_L,PID_outL);
+	    uart_write_buffer(UART_1,uart,strlen(uart));
+		
+		sprintf(uart,"%d,%d,%f\n",target_speed_R,real_speed_R,PID_outR);
+ 	    uart_write_buffer(UART_1,uart,strlen(uart));
 		
 //		sprintf(uart, "%d,%d,%d,%d,", adc_filted[0], adc_filted[1], adc_filted[2], adc_filted[3]);
 //		uart_write_buffer(UART_1,uart,strlen(uart));

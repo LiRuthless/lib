@@ -13,14 +13,15 @@ void track_test(void)
 {
 	read_adc();     // 读取四路电感ADC值 
 	
-    base_speed = 1000;
+	fan_duty = 6000;       // 初始化负压电机占空比为60%占空比
+    base_speed = 200;
 //	KP_x = 0.15;
 //	KD_x = 0.30;
 	
 //	KP_x = 0.181;
 //	KD_x = 0.1;
-	KP_x = 0.045;
-	KD_x = 0.14;
+	KP_x = 0.02;
+	KD_x = 0.03;
 
 
 	
@@ -76,7 +77,6 @@ void speed_test2(void)
 {
 static uint16 cnt = 0; 
 
-	
     cnt++;
 //    if(cnt >= 80)               // 80 * 10ms = 800ms
 //    {
@@ -89,14 +89,14 @@ static uint16 cnt = 0;
 //        }
 //    }
 //	
-	    if(cnt >= 80)               // 80 * 10ms = 800ms
+	    if(cnt >= 200)               // 80 * 10ms = 800ms
     {
         cnt = 0;
-        if(base_speed != 3000){
-            base_speed =3000;
+        if(base_speed != 600){
+            base_speed =600;
         }
         else{
-            base_speed = 1500;
+            base_speed = 300;
         }
     }
 	target_speed_L = base_speed;

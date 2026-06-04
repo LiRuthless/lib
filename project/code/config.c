@@ -39,8 +39,8 @@ void All_init(void)
 	
 	imu660rb_init();
 	
-    pit_ms_init(PIT_TR, 50);    // 初始化50ms定时中断（循迹控制）
-    pit_ms_init(PIT_SP, 10);    // 初始化10ms定时中断（速度环）
+    pit_ms_init(PIT_TR, 5);    // 初始化50ms定时中断（循迹控制）
+    pit_ms_init(PIT_SP, 2);    // 初始化10ms定时中断（速度环）
 }
 
 
