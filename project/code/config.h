@@ -20,6 +20,7 @@ extern uint8 dat[32];
 extern bit Start;           // 启动标志位
 extern bit Run;             // 运行标志位
 extern int16 battery;
+extern int16 battery_filt;
 
 void All_init(void);        // 系统初始化
 void uart_adjust(void);

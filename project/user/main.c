@@ -19,6 +19,7 @@ void main()
     tim3_irq_handler = pit_track;       // TIM3中断 -> 循迹控制处理
 
     All_init();                         // 调用各模块统一初始化
+	read_menu();
 
     WDT_CONTR = 0x21;                   // 使能看门狗，预分频4（约140ms溢出）
 
@@ -46,11 +47,11 @@ void main()
         
 //      menu();  // 菜单处理函数，包含按键扫描和功能选择
 				
-		sprintf(uart,"%d,%d,%f,",target_speed_L,real_speed_L,PID_outL);
-	    uart_write_buffer(UART_1,uart,strlen(uart));
-		
-		sprintf(uart,"%d,%d,%f\n",target_speed_R,real_speed_R,PID_outR);
- 	    uart_write_buffer(UART_1,uart,strlen(uart));
+//		sprintf(uart,"%d,%d,%f,",target_speed_L,real_speed_L,PID_outL);
+//	    uart_write_buffer(UART_1,uart,strlen(uart));
+//		
+//		sprintf(uart,"%d,%d,%f\n",target_speed_R,real_speed_R,PID_outR);
+// 	    uart_write_buffer(UART_1,uart,strlen(uart));
 		
 //		sprintf(uart, "%d,%d,%d,%d,", adc_filted[0], adc_filted[1], adc_filted[2], adc_filted[3]);
 //		uart_write_buffer(UART_1,uart,strlen(uart));
@@ -59,7 +60,7 @@ void main()
 //		uart_write_buffer(UART_1,uart,strlen(uart));
 
 //		uart_adjust();
-		system_delay_ms(10);
+//		system_delay_ms(10);
     }
 }
 
@@ -67,7 +68,6 @@ void main()
 
 void pit_track (void)
 {
-
 
 //	bb++;
 	

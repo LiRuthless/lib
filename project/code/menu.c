@@ -2,8 +2,8 @@
 
 
 // ==================== 菜单状态变量 ====================
-static uint16 page =  0;     // 当前页面编号
-static uint8 arrow = 1;      // 当前光标位置（从1开始计数）
+uint8 page =  0;      // 当前页面编号
+uint8 arrow = 1;      // 当前光标位置（从1开始计数）
 static uint8 mode = 1;  
 uint16 key_adc1 = 0;
 uint16 key_adc2 = 0;
@@ -181,6 +181,7 @@ static void menu_draw_content(void)
 	    ips114_show_string(2, 32, "KD_x");         ips114_show_float(100, 32, KD_x,2,3);
 	    ips114_show_string(2, 48, "base_speed");   ips114_show_int16(100, 48, base_speed);
 	    ips114_show_string(2, 64, "fan_duty");     ips114_show_int16(100, 64, fan_duty);
+		write_speed_low();
 	    break;
 	
 	 case PAGE_ADJUST2:
@@ -189,6 +190,7 @@ static void menu_draw_content(void)
 	    ips114_show_string(2, 32, "KD_x");         ips114_show_float(100, 32, KD_x,2,3);
 	    ips114_show_string(2, 48, "base_speed");   ips114_show_int16(100, 48, base_speed);
 	    ips114_show_string(2, 64, "fan_duty");     ips114_show_int16(100, 64, fan_duty);
+		write_speed_high();
 	    break; 
     }
 }
@@ -216,6 +218,8 @@ void menu(void)
 {
     static uint8 last_key = 0;  // 上一次按键值，用于边沿检测消抖
     uint8 key = key_scan();
+	
+	read_menu();
 
     // 按键释放时清零记录
     if(key == 0)
@@ -253,4 +257,6 @@ void menu(void)
 
     // 绘制光标指示器
     menu_draw_cursor();
+	
+	write_menu();
 }

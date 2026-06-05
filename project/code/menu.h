@@ -25,6 +25,8 @@
 #define PAGE_ADJUST1        11   // 调参页1，慢速
 #define PAGE_ADJUST2        12   // 调参页2，快速
 
+extern uint8 page;       // 当前页面编号
+extern uint8 arrow;      // 当前光标位置（从1开始计数）
 extern uint16 key_adc1;
 extern uint16 key_adc2; 
 

@@ -15,13 +15,9 @@ void track_test(void)
 	
 	fan_duty = 6000;       // 初始化负压电机占空比为60%占空比
     base_speed = 200;
-//	KP_x = 0.15;
-//	KD_x = 0.30;
-	
-//	KP_x = 0.181;
-//	KD_x = 0.1;
-	KP_x = 0.02;
-	KD_x = 0.03;
+
+	KP_x = 0.04;
+	KD_x = 0.15;
 
 
 	

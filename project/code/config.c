@@ -11,9 +11,12 @@ uint8 uart[32];     		// 串口数据发送缓冲区
 uint8 dat[32];
 
 int16 battery = 0;
+int16 battery_filt = 0;
 
 bit Start = 0;              // 启动标志位
 bit Run = 0;                // 运行标志位
+
+LowPassFilter filt_battery;
 
 // 函数名: All_init
 // 功能: 系统所有外设统一初始化
@@ -29,6 +32,7 @@ void All_init(void)
 	
 	adc_init(ADC_CH11_P03, ADC_12BIT);				//电源电压
 	gpio_init(IO_P10, GPO, 0, GPO_PUSH_PULL);		//蜂鸣器
+	lowpass_init(&filt_battery, 0.2);
     
     ips114_init();          // 初始化IPS114显示屏
 	key_init();             // 按键初始化
@@ -47,7 +51,6 @@ void All_init(void)
 void key_start(void)
 {
 	static uint8 last_key = 1; 		 // 上一次电平
-	static battery_low = 0;
 	uint8 cur_key = 1;
 	
 	cur_key = gpio_get_level(IO_P22);
@@ -61,31 +64,25 @@ void key_start(void)
 //	sprintf(uart,"%d,%d\n",cur_key, Start);
 // 	uart_write_buffer(UART_1,uart,strlen(uart));
 
-	battery = adc_mean_filter_convert(ADC_CH11_P03, 5);
+	battery = adc_convert(ADC_CH11_P03);
+	battery_filt = (int16)lowpass_update(&filt_battery, (float)battery);
 	
-//	sprintf(uart,"%d\n",battery);
-// 	uart_write_buffer(UART_1,uart,strlen(uart));
+	sprintf(uart,"%d\n",battery_filt);
+ 	uart_write_buffer(UART_1,uart,strlen(uart));
 	
-//	if(!battery_low)
-//	{
-//		if(battery < 1170)
-//			battery_low = 1;
-//	}
-//	else
-//	{
-//		if(battery > 1210)
-//			battery_low = 0;
-//	}
-//	
-//	while( battery_low )		//max1308-12.6v  min1182-11.4  1192-11.5
-//	{
-//		P10 = 1;
-//		system_delay_ms(100);
-//		P10 = 0;
-//		system_delay_ms(100);
-//		
-//		Start = 0;
-//	}
+
+	while( battery < 1200 && battery > 300 )		//max1308-12.6v  min1182-11.4  1192-11.5
+	{
+		Start = 0;
+		
+		P10 = 1;
+		system_delay_ms(100);
+		P10 = 0;
+		system_delay_ms(100);
+
+	battery = adc_convert(ADC_CH11_P03);
+	battery_filt = (int16)lowpass_update(&filt_battery, (float)battery);
+	}
 	
 	if( Start )
 	{
