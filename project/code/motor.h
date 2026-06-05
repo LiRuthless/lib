@@ -23,9 +23,9 @@ extern int16 target_speed_R;    // 右轮目标速度
 extern int16 real_speed_L;      // 左轮实际速度
 extern int16 real_speed_R;      // 右轮实际速度
 extern int16 base_speed;	    // 基础目标速度
-extern int16 fan_duty;
+extern int16 fan_duty;				// 负压电机PWM占空比
 
-extern int32 Distance;
+extern int32 Distance;				// 累计行驶距离（左右轮平均）
 
 extern float alpha;             // 低通滤波系数
 

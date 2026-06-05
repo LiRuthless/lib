@@ -23,7 +23,7 @@ float PID_outR = 0.0f;              // PID总输出
 // 函数名: PID_track
 // 功能: 位置式循迹PID控制器
 // 参数: track_error - 循迹偏差输入（由adc.c计算得到）
-// 返回值: 舵机/方向控制输出，范围[-2.7, 2.7]
+// 返回值: 方向控制输出，范围[-MAX_DIR_OUT, MAX_DIR_OUT]（±200）
 // 说明: 采用改进型位置式PID，增加了非线性P2项（K2P_x * error * |error|），
 //       在小偏差时响应柔和，大偏差时快速修正。
 int16 PID_track(void)
@@ -61,7 +61,7 @@ int16 PID_track(void)
 // 功能: 左轮增量式速度PID控制器
 // 参数: target_speed_L - 左轮目标速度
 //       real_speed_L   - 左轮实际速度（编码器反馈）
-// 返回值: 左轮电机PWM控制增量输出，范围[-5000, 5000]
+// 返回值: 左轮电机PWM控制增量输出，范围[-MAX_SPD_OUT, MAX_SPD_OUT]（±7000）
 // 说明: 采用增量式PID算法，输出为PWM增量，抗积分饱和。
 //       微分项使用二阶差分：error - 2*Last_error + Previous_error
 int16 PID_L(void)
@@ -100,7 +100,7 @@ int16 PID_L(void)
 // 功能: 右轮增量式速度PID控制器
 // 参数: target_speed_R - 右轮目标速度
 //       real_speed_R   - 右轮实际速度（编码器反馈）
-// 返回值: 右轮电机PWM控制增量输出，范围[-5000, 5000]
+// 返回值: 右轮电机PWM控制增量输出，范围[-MAX_SPD_OUT, MAX_SPD_OUT]（±7000）
 // 说明: 与PID_L对称，实现右轮独立速度闭环控制。
 int16 PID_R(void)
 {

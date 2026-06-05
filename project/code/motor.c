@@ -13,8 +13,8 @@ int16 real_speed_L = 0;         // 左轮实际速度（编码器滤波后）
 int16 real_speed_R = 0;         // 右轮实际速度（编码器滤波后）
 
 int16 base_speed = 0;      		// 基础目标速度
-int16 fan_duty = 0;
-int32 Distance = 0;
+int16 fan_duty = 0;				// 负压电机PWM占空比
+int32 Distance = 0;					// 累计行驶距离（左右轮平均）
 
 float alpha = 0.65;              // 编码器速度低通滤波系数
 
@@ -42,24 +42,24 @@ void motor_control(void)
     // 左轮控制
     if(speed_outL >= 0)             // 正转（速度为正）
     {
-        gpio_set_level(MOTOR_DIR_L, GPIO_HIGH);      // DIR输出低电平
+        gpio_set_level(MOTOR_DIR_L, GPIO_HIGH);      // DIR置高，左轮正转
         pwm_set_duty(MOTOR_PWM_L, speed_outL);      // 设置正占空比
     }
     else                            // 反转（速度为负）
     {
-        gpio_set_level(MOTOR_DIR_L, GPIO_LOW);     // DIR输出高电平
+        gpio_set_level(MOTOR_DIR_L, GPIO_LOW);     // DIR置低，左轮反转
         pwm_set_duty(MOTOR_PWM_L, -speed_outL);     // 设置正占空比（取绝对值）
     }
     
     // 右轮控制
     if(speed_outR >= 0)             // 正转（速度为正）
     {
-        gpio_set_level(MOTOR_DIR_R, GPIO_LOW);      // DIR输出低电平
+        gpio_set_level(MOTOR_DIR_R, GPIO_LOW);      // DIR置低，右轮正转（左右轮DIR逻辑相反）
         pwm_set_duty(MOTOR_PWM_R, speed_outR);      // 设置正占空比
     }
     else                            // 反转（速度为负）
     {
-        gpio_set_level(MOTOR_DIR_R, GPIO_HIGH);     // DIR输出高电平
+        gpio_set_level(MOTOR_DIR_R, GPIO_HIGH);     // DIR置高，右轮反转（左右轮DIR逻辑相反）
         pwm_set_duty(MOTOR_PWM_R, -speed_outR);     // 设置正占空比（取绝对值）
     }
 

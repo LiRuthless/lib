@@ -14,10 +14,10 @@ void track_test(void)
 	read_adc();     // 读取四路电感ADC值 
 	
 	fan_duty = 6000;       // 初始化负压电机占空比为60%占空比
-    base_speed = 200;
+    base_speed = 200;      // 设置基础目标速度
 
-	KP_x = 0.04;
-	KD_x = 0.15;
+	KP_x = 0.04;           // 设置方向环比例系数
+	KD_x = 0.15;           // 设置方向环微分系数
 
 
 	
@@ -68,13 +68,14 @@ void track_test(void)
 
 // 函数名: speed_test2
 // 功能: 速度环调参测试（固定周期切换速度）
-// 说明: 每800ms在1000和600之间切换基础速度，用于测试速度环响应
+// 说明: 每1000ms在600和300之间切换基础速度（在5ms中断中调用，cnt每200次切换一次），
+//       用于测试速度环响应。
 void speed_test2(void)
 {
 static uint16 cnt = 0; 
 
     cnt++;
-//    if(cnt >= 80)               // 80 * 10ms = 800ms
+//    if(cnt >= 80)               // 80 * 5ms = 400ms
 //    {
 //        cnt = 0;
 //        if(base_speed != 1000){
@@ -85,7 +86,7 @@ static uint16 cnt = 0;
 //        }
 //    }
 //	
-	    if(cnt >= 200)               // 80 * 10ms = 800ms
+	    if(cnt >= 200)               // 200 * 5ms = 1000ms
     {
         cnt = 0;
         if(base_speed != 600){
@@ -102,7 +103,8 @@ static uint16 cnt = 0;
 
 // 函数名: speed_test
 // 功能: 速度环与循迹综合控制
-// 说明: 周期性切换基础速度，同时进行循迹检测与差速控制。
+// 说明: 每400ms切换基础速度（在5ms中断中调用，cnt每80次切换一次），
+//       同时进行循迹检测与差速控制。
 //       当电感值总和超过阈值时，认为在赛道上，启动循迹PID并差速；
 //       否则停止电机。
 void speed_test(void)
@@ -112,7 +114,7 @@ static uint16 cnt = 0;
 	read_adc();     // 读取四路电感ADC值 
 	
     cnt++;
-    if(cnt >= 80)               // 80 * 50ms
+    if(cnt >= 80)               // 80 * 5ms = 400ms
     {
         cnt = 0;
         if(base_speed != 600)
@@ -167,8 +169,8 @@ static uint16 cnt = 0;
 }
 
 // 函数名: gyro_test
-// 功能: 循迹测试（预留）
-// 说明: 预留接口，可用于单独测试循迹功能
+// 功能: 陀螺仪测试（预留）
+// 说明: 读取IMU陀螺仪数据并通过串口输出，用于传感器调试。
 void gyro_test(void)
 {
 	imu660rb_get_gyro();

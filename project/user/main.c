@@ -7,7 +7,7 @@
 
 #include "config.h"
 
-uint32 bb = 0;
+uint32 bb = 0;							// 通用计数变量（预留调试用）
 
 // 函数名: main
 // 功能: 主函数入口
@@ -19,12 +19,12 @@ void main()
     tim3_irq_handler = pit_track;       // TIM3中断 -> 循迹控制处理
 
     All_init();                         // 调用各模块统一初始化
-	read_menu();
+	read_menu();						// 从Flash加载菜单状态
 
     WDT_CONTR = 0x21;                   // 使能看门狗，预分频4（约140ms溢出）
 
-    KP_v  = 15.0;       // 速度环比例系数			//15.0  0.85
-    KI_v  = 0.85;       // 速度环积分系数			//3.46  0.39!!!!!!!
+    KP_v  = 15.0;       				// 速度环比例系数			//15.0  0.85
+    KI_v  = 0.85;      					// 速度环积分系数			//3.46  0.39!!!!!!!
 	
 	
 //    KP_x  = 0.2;       // 方向环比例系数				300--p0.2--d0.08
@@ -66,10 +66,14 @@ void main()
 
 
 
+// 函数名: pit_track
+// 功能: TIM3中断服务函数（5ms周期）
+// 说明: 执行循迹控制，检测赛道并计算差速目标速度。
+//       未启动或出赛道时强制停车。
 void pit_track (void)
 {
 
-//	bb++;
+//	bb++;								// 调试用计数器
 	
 	if( Start )
 	{
@@ -94,9 +98,12 @@ void pit_track (void)
 
 
 
+// 函数名: pit_speed
+// 功能: TIM4中断服务函数（2ms周期）
+// 说明: 喂看门狗、读取编码器、执行电机速度PID闭环控制。
 void pit_speed (void)
 {
-	CLR_WDT = 1;        // 在10ms中断中喂狗，不受主循环menu()耗时影响
+	CLR_WDT = 1;        // 在2ms中断中喂狗，不受主循环menu()耗时影响
 	
     read_encoder();     // 读取编码器并计算实际速度      
     motor_control();    // 执行电机PID控制

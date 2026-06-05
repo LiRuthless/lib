@@ -1,12 +1,41 @@
+// ============================================================
+// 文件名: menu.c
+// 功能说明: IPS114显示屏菜单与按键处理模块
+// 实现ADC分压按键扫描、页面导航、参数调参及屏幕刷新。
+// ============================================================
+//
+// ==================== 操作方法 ====================
+//
+// 【按键定义】（两路ADC分压键盘）
+//  UP/DOWN    : 上下移动光标
+//  OK         : 主页上进入子页面（ADC_ERR / SPD_DIS / GYRO）
+//  BACK       : 从子页面返回主页
+//  LEFT/RIGHT : 在调参页面增减参数（步进±0.001或±100）
+//  RST        : 清屏刷新，保持当前页面和光标
+//  ADJUST1    : 一键进入调参页1（慢速模式）
+//  ADJUST2    : 一键进入调参页2（快速模式）
+//
+// 【页面结构】
+//  主页(0) -> ADC_ERR(21)  显示四路电感ADC值
+//  主页(0) -> SPD_DIS(22)  显示左右轮速度及行驶距离
+//  主页(0) -> GYRO(23)     显示三轴陀螺仪角速度
+//  ADJUST1(11) / ADJUST2(12) : 调参页，可调整KP_x/K2P_x/KD_x/base_speed/fan_duty
+//
+// 【调参页面操作】
+//  UP/DOWN 切换光标项（共5项）
+//  LEFT/RIGHT 微调当前项参数
+//  切换页面时自动将参数写入EEPROM保存
+// ============================================================
+
 #include "config.h"
 
 
 // ==================== 菜单状态变量 ====================
-uint8 page =  0;      // 当前页面编号
-uint8 arrow = 1;      // 当前光标位置（从1开始计数）
-static uint8 mode = 1;  
-uint16 key_adc1 = 0;
-uint16 key_adc2 = 0;
+uint8 page =  0;            // 当前页面编号
+uint8 arrow = 1;            // 当前光标位置（从1开始计数）
+static uint8 mode = 1;  	// 菜单模式（1=浏览模式，2=调参模式）
+uint16 key_adc1 = 0;		// 按键ADC通道1采样值
+uint16 key_adc2 = 0;		// 按键ADC通道2采样值
 
 // 显示状态（用于减少不必要的刷新与闪烁）
 static uint16 last_displayed_page = 0xFFFF;
@@ -51,11 +80,14 @@ uint8 key_scan(void)
     return key_status;
 }
 
+// 函数名: key_init
+// 功能: 初始化按键ADC和启动按键GPIO
+// 说明: 配置两路按键分压ADC通道和IO_P22启动按键输入。
 void key_init(void)
 {
-	adc_init(KEY_CHANNEL1, ADC_12BIT);
-	adc_init(KEY_CHANNEL2, ADC_12BIT);
-	gpio_init(IO_P22, GPIO, 1, GPIO_NO_PULL);
+	adc_init(KEY_CHANNEL1, ADC_12BIT);		// 初始化按键ADC通道1
+	adc_init(KEY_CHANNEL2, ADC_12BIT);		// 初始化按键ADC通道2
+	gpio_init(IO_P22, GPIO, 1, GPIO_NO_PULL);	// 初始化启动按键GPIO（P22），无上拉输入
 }
 
 

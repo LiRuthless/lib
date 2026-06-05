@@ -27,8 +27,8 @@
 
 extern uint8 page;       // 当前页面编号
 extern uint8 arrow;      // 当前光标位置（从1开始计数）
-extern uint16 key_adc1;
-extern uint16 key_adc2; 
+extern uint16 key_adc1;			// 按键ADC通道1采样值
+extern uint16 key_adc2;				// 按键ADC通道2采样值 
 
 // 函数声明
 uint8 key_scan(void);                               // ADC按键扫描

@@ -15,7 +15,7 @@
 uint16 adc_raw[4] = {0};        // 四路ADC原始采样值数组
 int16 adc_filted[4] = {0};     // 四路ADC滤波后的输出值数组
 
-int16 track_error = 0; 
+int16 track_error = 0; 				// 循迹偏差值（由get_track_error计算）
 
 uint16 adc_sum[4] = {0};        // 每路ADC累加和，用于平均滤波
 uint16 max[4] = {0};            // 每路ADC采样最大值，用于去极值

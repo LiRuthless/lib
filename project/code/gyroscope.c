@@ -13,12 +13,12 @@ float gyro_x = 0;       // X轴陀螺仪角速度
 float gyro_y = 0;       // Y轴陀螺仪角速度
 float gyro_z = 0;       // Z轴陀螺仪角速度
 
-float velocity_x = 0;
-float velocity_y = 0;
-float velocity_z = 0;
-float angle_x = 0;
-float angle_y = 0;
-float angle_z = 0;
+float velocity_x = 0;    // X轴速度积分值
+float velocity_y = 0;    // Y轴速度积分值
+float velocity_z = 0;    // Z轴速度积分值
+float angle_x = 0;       // X轴角度积分值
+float angle_y = 0;       // Y轴角度积分值
+float angle_z = 0;       // Z轴角度积分值
 
 static float accel_offset_x = 0;	 // X轴加速度零偏
 static float accel_offset_y = 0;	 // Y轴加速度零偏
@@ -28,6 +28,9 @@ static float gyro_offset_y = 0;	 	 // Y轴陀螺仪零偏
 static float gyro_offset_z = 0;	 	 // Z轴陀螺仪零偏
 
 
+// 函数名: read_accel_velocity
+// 功能: 读取加速度并积分得到速度
+// 说明: 获取IMU加速度数据，去零偏后梯形积分得到各轴速度。
 void read_accel_velocity(void)
 {
 	static float accel_last_x = 0;
@@ -51,6 +54,9 @@ void read_accel_velocity(void)
 }
 
 
+// 函数名: read_gyro_angle
+// 功能: 读取陀螺仪并积分得到角度
+// 说明: 获取IMU角速度数据，去零偏后梯形积分得到各轴角度。
 void read_gyro_angle(void)
 {
 	static float gyro_last_x = 0;
@@ -74,6 +80,9 @@ void read_gyro_angle(void)
 }
 
 
+// 函数名: accel_calibrate
+// 功能: 加速度计静态零偏校准
+// 说明: 采样100次取平均，计算加速度零偏并清零速度积分。
 void accel_calibrate(void)
 {
 	const int8 samples = 100;
@@ -95,6 +104,9 @@ void accel_calibrate(void)
 }
 
 
+// 函数名: gyro_calibrate
+// 功能: 陀螺仪静态零偏校准
+// 说明: 采样100次取平均，计算陀螺仪零偏并清零角度积分。
 void gyro_calibrate(void)
 {
 	const int8 samples = 100;

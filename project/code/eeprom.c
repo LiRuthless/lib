@@ -10,6 +10,9 @@
 int16 air = 0;      // 预留参数（用于扩展存储）
 
 
+// 函数名: write_menu
+// 功能: 将菜单状态写入EEPROM
+// 说明: 保存当前页面和光标位置到Flash地址0x0110起。
 void write_menu(void)
 {  
     extern_iap_write_buff(0x0110, (uint8 *)&page, 2);
@@ -26,8 +29,8 @@ void write_menu(void)
 }
 
 
-// 函数名: write_pid
-// 功能: 将当前PID参数写入EEPROM
+// 函数名: write_pid_v
+// 功能: 将当前速度环PID参数写入EEPROM
 // 说明: 存储方向环和速度环的KP、KI、KD参数到Flash地址0x0200起
 void write_pid_v(void)
 {
@@ -36,6 +39,9 @@ void write_pid_v(void)
 }
 
 
+// 函数名: write_speed_low
+// 功能: 将慢速模式参数写入EEPROM
+// 说明: 保存方向环PID及基础速度到Flash地址0x0210起。
 void write_speed_low(void)
 {  
     extern_iap_write_buff(0x0210, (uint8 *)&KP_x, 2);
@@ -51,8 +57,8 @@ void write_speed_low(void)
 	extern_iap_write_buff(0x0228, (uint8 *)&air, 2);
 }
 
-// 函数名: write_speed
-// 功能: 将当前速度参数写入EEPROM
+// 函数名: write_speed_high
+// 功能: 将当前快速模式参数写入EEPROM
 // 说明: 存储基础速度和负压占空比到Flash地址0x0220起
 void write_speed_high(void)
 {
@@ -63,6 +69,8 @@ void write_speed_high(void)
 	extern_iap_write_buff(0x0238, (uint8 *)&base_speed, 2);
 }
 
+// 函数名: read_all
+// 功能: 从EEPROM读取所有参数（预留统一接口）
 void read_all(void)
 {
 	read_menu();
@@ -71,6 +79,9 @@ void read_all(void)
 
 
 
+// 函数名: read_menu
+// 功能: 从EEPROM读取菜单状态
+// 说明: 从Flash地址0x0110起加载页面和光标位置。
 void read_menu(void)
 {  
     iap_read_buff(0x0110, (uint8 *)&page, 2);
@@ -88,8 +99,8 @@ void read_menu(void)
 
 
 
-// 函数名: read_pid
-// 功能: 从EEPROM读取PID参数
+// 函数名: read_pid_v
+// 功能: 从EEPROM读取速度环PID参数
 // 说明: 从Flash地址0x0200起加载方向环和速度环PID参数
 void read_pid_v(void)
 {
@@ -97,9 +108,9 @@ void read_pid_v(void)
     iap_read_buff(0x0202, (uint8 *)&KI_v, 2);
 }
 
-// 函数名: read_speed
-// 功能: 从EEPROM读取速度参数
-// 说明: 从Flash地址0x0220起加载基础速度和负压占空比
+// 函数名: read_speed_low
+// 功能: 从EEPROM读取慢速模式参数
+// 说明: 从Flash地址0x0210起加载方向环PID及基础速度。
 void read_speed_low(void)
 {
     iap_read_buff(0x0210, (uint8 *)&KP_x, 2);
@@ -109,6 +120,9 @@ void read_speed_low(void)
 	iap_read_buff(0x0218, (uint8 *)&base_speed, 2);
 }
 
+// 函数名: read_speed_high
+// 功能: 从EEPROM读取快速模式参数
+// 说明: 从Flash地址0x0230起加载方向环PID及基础速度。
 void read_speed_high(void)
 {
     iap_read_buff(0x0230, (uint8 *)&KP_x, 2);

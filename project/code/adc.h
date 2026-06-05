@@ -9,7 +9,7 @@
 
 extern uint16 adc_raw[4];       // 四路ADC原始采样值数组
 extern int16 adc_filted[4];    // 四路ADC滤波后的输出值数组
-extern int16 track_error;
+extern int16 track_error;			// 循迹偏差值
 
 //extern uint16 adc1;
 //extern uint16 adc2;

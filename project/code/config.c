@@ -8,15 +8,15 @@
 #include "config.h"
 
 uint8 uart[32];     		// 串口数据发送缓冲区
-uint8 dat[32];
+uint8 dat[32];						// 串口数据接收缓冲区
 
-int16 battery = 0;
-int16 battery_filt = 0;
+int16 battery = 0;					// 电池电压ADC原始值
+int16 battery_filt = 0;				// 电池电压滤波值
 
-bit Start = 0;              // 启动标志位
-bit Run = 0;                // 运行标志位
+bit Start = 0;              // 启动标志位（按键控制）
+bit Run = 0;                // 运行标志位（赛道检测控制）
 
-LowPassFilter filt_battery;
+LowPassFilter filt_battery;			// 电池电压低通滤波器
 
 // 函数名: All_init
 // 功能: 系统所有外设统一初始化
@@ -25,32 +25,36 @@ void All_init(void)
 {
     uart_init(UART_1, 115200, UART1_TX_P31, UART1_RX_P30); // 初始化串口1，波特率115200
     wireless_uart_init();   // 初始化无线串口
-	uart_rx_interrupt(UART_1, ENABLE);
-	uart_rx_start_buff(UART_1);
+	uart_rx_interrupt(UART_1, ENABLE);	// 使能串口1接收中断
+	uart_rx_start_buff(UART_1);			// 启动串口1接收缓冲
 	
-	iap_init();
+	iap_init();							// 初始化IAP（Flash模拟EEPROM）
 	
-	adc_init(ADC_CH11_P03, ADC_12BIT);				//电源电压
-	gpio_init(IO_P10, GPO, 0, GPO_PUSH_PULL);		//蜂鸣器
-	lowpass_init(&filt_battery, 0.2);
+	adc_init(ADC_CH11_P03, ADC_12BIT);	// 初始化电池电压检测ADC，12位精度
+	gpio_init(IO_P10, GPO, 0, GPO_PUSH_PULL);	// 初始化蜂鸣器GPIO（P10），推挽输出
+	lowpass_init(&filt_battery, 0.2);	// 初始化电池电压低通滤波器
     
     ips114_init();          // 初始化IPS114显示屏
-	key_init();             // 按键初始化
+	key_init();             // 初始化按键ADC
     
-    front_adc_init();       // 初始化前置四路ADC
+    front_adc_init();       // 初始化前置四路电感ADC
     encoder_init();         // 初始化编码器
     motor_init();           // 初始化电机PWM
 	
-	imu660rb_init();
+	imu660rb_init();					// 初始化IMU660RB六轴传感器
 	
-    pit_ms_init(PIT_TR, 5);    // 初始化50ms定时中断（循迹控制）
-    pit_ms_init(PIT_SP, 2);    // 初始化10ms定时中断（速度环）
+    pit_ms_init(PIT_TR, 5);    // 初始化5ms定时中断（循迹控制）
+    pit_ms_init(PIT_SP, 2);    // 初始化2ms定时中断（速度环）
 }
 
 
+// 函数名: key_start
+// 功能: 启动按键检测与电池电压监测
+// 说明: 检测IO_P22按键下降沿翻转Start标志，同时监测电池电压。
+//       电池电压过低时蜂鸣器报警并强制停止。
 void key_start(void)
 {
-	static uint8 last_key = 1; 		 // 上一次电平
+	static uint8 last_key = 1; 		 // 上一次按键电平
 	uint8 cur_key = 1;
 	
 	cur_key = gpio_get_level(IO_P22);
@@ -86,8 +90,8 @@ void key_start(void)
 	
 	if( Start )
 	{
-		PID_outL = 0.0;
-		PID_outR = 0.0;
+		PID_outL = 0.0;				// 启动时清零左轮PID累计输出
+		PID_outR = 0.0;				// 启动时清零右轮PID累计输出
 	}
 }
 
