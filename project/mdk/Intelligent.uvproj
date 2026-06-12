@@ -785,6 +785,16 @@
               <FilePath>..\code\pid.h</FilePath>
             </File>
             <File>
+              <FileName>roundabout.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>C:\Users\Li\Desktop\Sirius20260527\project\code\roundabout.c</FilePath>
+            </File>
+            <File>
+              <FileName>roundabout.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\roundabout.h</FilePath>
+            </File>
+            <File>
               <FileName>motor.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\code\motor.c</FilePath>

@@ -7,15 +7,21 @@
 
 #include "config.h"
 
-float KP_v = 0.0f;              // 速度环比例系数
-float KI_v = 0.0f;              // 速度环积分系数
-float KD_v = 0.0f;              // 速度环微分系数
-
 float KP_x = 0.0f;              // 方向环比例系数
 float K2P_x = 0.0f;             // 方向环非线性二次比例系数
 float KI_x = 0.0f;              // 方向环积分系数（预留）
 float KD_x = 0.0f;              // 方向环微分系数
 
+float KP_a = 0.0f;
+float KD_a = 0.0f;
+float KG_a = 0.0f;
+
+float KP_v = 0.0f;              // 速度环比例系数
+float KI_v = 0.0f;              // 速度环积分系数
+float KD_v = 0.0f;              // 速度环微分系数
+
+float angle_err = 0.0;
+float angle_out = 0.0;
 float PID_outL = 0.0f;              // PID总输出
 float PID_outR = 0.0f;              // PID总输出
 
@@ -28,24 +34,22 @@ float PID_outR = 0.0f;              // PID总输出
 //       在小偏差时响应柔和，大偏差时快速修正。
 int16 PID_track(void)
 {   
-    static float P_out = 0.0,       // P环节输出
-                 P2_out = 0.0,      // P2环节输出（非线性项）
-//               I_out = 0.0,
-                 D_out = 0.0;       // D环节输出
+	int32 error = 0.0;
+	
+    float P_out = 0.0;       // P环节输出
+    float P2_out = 0.0;      // P2环节输出（非线性项）
+    float D_out = 0.0;       // D环节输出
     
-    static int32 error = 0.0,
-				 error_last = 0.0,   // 上次偏差
-                 error_sum = 0.0;    // 偏差累计（积分项）
+	static int32 error_last = 0.0;   // 上次偏差
     
-    int32 PID_out = 0.0;     // PID总输出
+    int16 PID_out = 0.0;     // PID总输出
     
     error = track_error;            // 更新当前偏差
 //  error_sum += error;
     
-    P_out  = KP_x  * (float) error;                               // 计算P环节输出
+    P_out  = KP_x  * (float) error;                       // 计算P环节输出
     P2_out = K2P_x * (float) error * abs(error);          // 计算非线性P2项
-    D_out  = KD_x  * (float)(error - error_last);                // 计算D环节输出（微分项）
-//  I_out += KI * error;                                // 计算I环节输出（已禁用）
+    D_out  = KD_x  * (float)(error - error_last);         // 计算D环节输出（微分项）
     
     error_last = error;             // 更新上次偏差，供下次微分计算使用
     
@@ -56,6 +60,32 @@ int16 PID_track(void)
     
     return PID_out;                 // 返回PID控制输出
 }
+
+
+void PID_angle(int16 target_angle)
+{
+	static float angle_err_last = 0.0;
+	
+	angle_err = target_angle - angle_x;  // 角度误差 = 目标角度 - 当前角度
+
+	angle_out = KP_a * angle_err + KD_a * (angle_err - angle_err_last) - KG_a * gyro_x;  // 角度PD控制：角度误差比例+微分-陀螺仪阻尼
+
+	/*		40 * 0.5	+		0		-	7 *		gyro_yy()		*/
+	angle_err_last = angle_err;
+	
+	if( angle_out >= 0 )
+	{
+		target_speed_L = base_speed + angle_out;    // 左轮减速
+		target_speed_R = base_speed - angle_out;    // 右轮加速
+	}
+    else
+	{
+		target_speed_L = base_speed + angle_out;    // 左轮加速
+		target_speed_R = base_speed - angle_out;    // 右轮减速
+	}
+}
+
+
 
 // 函数名: PID_L
 // 功能: 左轮增量式速度PID控制器
@@ -164,8 +194,8 @@ int16 PID_L_pos(void)
     
     
     // 积分限幅：给死区前馈和P项留出余量，防止暗饱和
-    if(I_outL >  (MAX_SPD_OUT - MOTOR_DEAD_ZONE)) I_outL =  (MAX_SPD_OUT - MOTOR_DEAD_ZONE);
-    if(I_outL < -(MAX_SPD_OUT - MOTOR_DEAD_ZONE)) I_outL = -(MAX_SPD_OUT - MOTOR_DEAD_ZONE);
+    if(I_outL >  (MAX_SPD_OUT - MOTOR_DEAD_ZONE_L)) I_outL =  (MAX_SPD_OUT - MOTOR_DEAD_ZONE_L);
+    if(I_outL < -(MAX_SPD_OUT - MOTOR_DEAD_ZONE_L)) I_outL = -(MAX_SPD_OUT - MOTOR_DEAD_ZONE_L);
     
 //    D_outL = KD_v * (float)(errorL - Last_errorL);  // D环节：微分控制（当前KD_v=0，暂不使用）
     
@@ -173,8 +203,8 @@ int16 PID_L_pos(void)
     
     // 根据目标速度方向叠加死区前馈偏置
     // target=0 时不加偏置，确保能真正停车
-    if      (target_speed_L > 0) PID_outL += MOTOR_DEAD_ZONE;
-    else if (target_speed_L < 0) PID_outL -= MOTOR_DEAD_ZONE;
+    if      (target_speed_L > 0) PID_outL += MOTOR_DEAD_ZONE_L;
+    else if (target_speed_L < 0) PID_outL -= MOTOR_DEAD_ZONE_L;
     
     if(PID_outL >  MAX_SPD_OUT) PID_outL =  MAX_SPD_OUT;        // 输出限幅上限
     if(PID_outL < -MAX_SPD_OUT) PID_outL = -MAX_SPD_OUT;        // 输出限幅下限
@@ -218,8 +248,8 @@ int16 PID_R_pos(void)
     
     
     // 积分限幅：给死区前馈和P项留出余量，防止暗饱和
-    if(I_outR >  (MAX_SPD_OUT - MOTOR_DEAD_ZONE)) I_outR =  (MAX_SPD_OUT - MOTOR_DEAD_ZONE);
-    if(I_outR < -(MAX_SPD_OUT - MOTOR_DEAD_ZONE)) I_outR = -(MAX_SPD_OUT - MOTOR_DEAD_ZONE);
+    if(I_outR >  (MAX_SPD_OUT - MOTOR_DEAD_ZONE_R)) I_outR =  (MAX_SPD_OUT - MOTOR_DEAD_ZONE_R);
+    if(I_outR < -(MAX_SPD_OUT - MOTOR_DEAD_ZONE_R)) I_outR = -(MAX_SPD_OUT - MOTOR_DEAD_ZONE_R);
     
 //    D_outR = KD_v * (float)(errorR - Last_errorR);  // D环节：微分控制（当前KD_v=0，暂不使用）
     
@@ -227,8 +257,8 @@ int16 PID_R_pos(void)
     
     // 根据目标速度方向叠加死区前馈偏置
     // target=0 时不加偏置，确保能真正停车
-    if      (target_speed_R > 0) PID_outR += MOTOR_DEAD_ZONE;
-    else if (target_speed_R < 0) PID_outR -= MOTOR_DEAD_ZONE;
+    if      (target_speed_R > 0) PID_outR += MOTOR_DEAD_ZONE_R;
+    else if (target_speed_R < 0) PID_outR -= MOTOR_DEAD_ZONE_R;
     
     if(PID_outR >  MAX_SPD_OUT) PID_outR =  MAX_SPD_OUT;        // 输出限幅上限
     if(PID_outR < -MAX_SPD_OUT) PID_outR = -MAX_SPD_OUT;        // 输出限幅下限

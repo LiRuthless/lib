@@ -3,11 +3,94 @@
 // 功能说明: 控制策略与测试函数模块
 // 包含速度环测试、循迹测试、ADC测试等控制策略实现。
 // ============================================================
-
+/*    	每日一拜 好过省赛             天天参拜 稳过国赛        */
+/* \\ \\ \\ \\ \\ \\ \\ || || || || || || // // // // // // // //
+\\ \\ \\ \\ \\ \\ \\        _ooOoo_          // // // // // // //
+\\ \\ \\ \\ \\ \\          o8888888o            // // // // // //
+\\ \\ \\ \\ \\             88" . "88               // // // // //
+\\ \\ \\ \\                (| -_- |)                  // // // //
+\\ \\ \\                   O\  =  /O                     // // //
+\\ \\                   ____/`---'\____                     // //
+\\                    .'  \\|     |//  `.                      //
+==                   /  \\|||  :  |||//  \                     ==
+==                  /  _||||| -:- |||||-  \                    ==
+==                  |   | \\\  -  /// |   |                    ==
+==                  | \_|  ''\---/''  |   |                    ==
+==                  \  .-\__  `-`  ___/-. /                    ==
+==                ___`. .'  /--.--\  `. . ___                  ==
+==              ."" '<  `.___\_<|>_/___.'  >'"".               ==
+==            | | :  `- \`.;`\ _ /`;.`/ - ` : | |              \\
+//            \  \ `-.   \_ __\ /__ _/   .-` /  /              \\
+//      ========`-.____`-.___\_____/___.-`____.-'========      \\
+//                           `=---='                           \\
+// //   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  \\ \\
+// // //      佛祖保佑      永无BUG      永不修改        \\ \\ \\
+// // // // // // || || || || || || || || || || \\ \\ \\ \\ \\ */
 #include "config.h"
 
-
 int16 track_out = 0;     // 方向控制输出（由循迹PID计算）
+
+
+void roundabout_test(void)
+{   
+
+    if(current_state == STATE_NORMAL)  // 当前处于正常循迹状态 
+    {		
+//		angle_out = 0;
+		track_test();
+		
+		L_enter_judge();//检测预进	
+    }
+	
+	if(current_state == ISLAND_LPREENTER)  // 当前处于左预入环状态 
+    {
+//		track_out = 0;
+		PID_angle( 0 );
+		base_speed = 70; 
+		
+		if(round_flag == 0)  round_flag = 1;  //让进岛进入冷却				
+		
+	    L_ahead_judge();//是否满足距离	
+	}
+	
+	if(current_state == ISLAND_TURN_LEFT)  //距离到了 开始打角5  // 当前处于左转入环状态 
+	{
+
+		PID_angle( -enter_angle1 );
+		
+	    entered_judge();// 检测打角是否完成
+	}	
+	
+	if(current_state == ISLAND_IN)  // 当前处于环岛内部循迹状态 		
+	{
+//		x_weight=1; y_weight=0.3; abs_weight=0.3;
+		track_test();
+		
+		pre_out_judge();
+	}
+	
+	if(current_state == ISLAND_EXIT)  // 当前处于出环状态 
+	{
+		track_out=0;  // 关闭巡线	
+				
+		PID_angle( -pre_out_angle1 );
+	    base_speed = 70; 
+		
+		exit_judge();
+	}
+	
+	if(current_state == ISLAND_OUT)
+	{
+		track_out = 0;
+		base_speed = 70;
+	    PID_angle( -out_angle1 );
+		
+		outed_judge(); 
+	}	
+}
+
+
+
 
 void track_test(void)
 {
@@ -40,12 +123,12 @@ void track_test(void)
 		
 		pwm_set_duty(MOTOR_PWM_M, fan_duty); // 设置负压电机占空比
 		
-        Run = 1;      // 标记已启动
+        Run_flag = 1;      // 标记已启动
     }
     else // 电感值过低，认为出赛道或停止线
     {    
-        Run = 0;      // 清除启动标志
-		Start = 0;
+        Run_flag = 0;      // 清除启动标志
+		Start_flag = 0;
     }
 	
 //	sprintf(uart, "%d,%d,%d,%d,", adc_filted[0], adc_filted[1], adc_filted[2], adc_filted[3]);
@@ -75,29 +158,25 @@ void speed_test2(void)
 static uint16 cnt = 0; 
 
     cnt++;
-//    if(cnt >= 80)               // 80 * 5ms = 400ms
-//    {
-//        cnt = 0;
-//        if(base_speed != 1000){
-//            base_speed =1000;
-//        }
-//        else{
-//            base_speed = 600;
-//        }
-//    }
-//	
-	    if(cnt >= 200)               // 200 * 5ms = 1000ms
+
+	if(cnt >= 200)               // 200 * 5ms = 1000ms
     {
         cnt = 0;
-        if(base_speed != 600){
-            base_speed =600;
+		if(base_speed != 300){
+            base_speed = 300;
         }
         else{
-            base_speed = 300;
+            base_speed =-300;
         }
     }
 	target_speed_L = base_speed;
 	target_speed_R = base_speed;
+	
+	sprintf(uart,"%d,%d,%f,",target_speed_L,real_speed_L,PID_outL);
+	uart_write_buffer(UART_1,uart,strlen(uart));
+		
+	sprintf(uart,"%d,%d,%f\n",target_speed_R,real_speed_R,PID_outR);
+ 	uart_write_buffer(UART_1,uart,strlen(uart));
 }
 
 
@@ -150,12 +229,12 @@ static uint16 cnt = 0;
 		
 		pwm_set_duty(MOTOR_PWM_M, fan_duty); // 设置负压电机占空比
 		
-        Run = 1;      // 标记已启动
+        Run_flag = 1;      // 标记已启动
     }
     else // 电感值过低，认为出赛道或停止线
     {    
-        Run = 0;      // 清除启动标志
-		Start = 0;
+        Run_flag = 0;      // 清除启动标志
+		Start_flag = 0;
     }
     
     // 未启动状态下停止电机
@@ -208,3 +287,4 @@ void adc_test(void)
  	uart_write_buffer(UART_1,uart,strlen(uart));
 	
 }
+

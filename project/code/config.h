@@ -10,6 +10,7 @@
 #include "control.h"
 #include "eeprom.h"
 #include "gyroscope.h"
+#include "roundabout.h"
 
 
 #define PIT_TR      (TIM3_PIT)      // 循迹控制中断（5ms）
@@ -17,8 +18,8 @@
 
 extern uint8 uart[32];      // 串口数据发送缓冲区
 extern uint8 dat[32];
-extern bit Start;           // 启动标志位
-extern bit Run;             // 运行标志位
+extern bit Start_flag;           // 启动标志位
+extern bit Run_flag;             // 运行标志位
 extern int16 battery;
 extern int16 battery_filt;
 

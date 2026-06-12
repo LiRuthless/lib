@@ -14,6 +14,9 @@ int16 real_speed_R = 0;         // 右轮实际速度（编码器滤波后）
 
 int16 base_speed = 0;      		// 基础目标速度
 int16 fan_duty = 0;				// 负压电机PWM占空比
+
+int32 distance_L = 0;
+int32 distance_R = 0;	
 int32 Distance = 0;					// 累计行驶距离（左右轮平均）
 
 float alpha = 0.65;              // 编码器速度低通滤波系数
@@ -72,10 +75,7 @@ void motor_control(void)
 void read_encoder(void)
 {
     int16 encoder_L = 0,     // 左轮编码器累计值
-          encoder_R = 0;     // 右轮编码器累计值
-	
-	static int32 distance_L = 0,
-				 distance_R = 0;			 
+          encoder_R = 0;     // 右轮编码器累计值		 
     
     encoder_L = -encoder_get_count(ENCODER_DIR_L);      // 读取左轮编码器计数值（取反）
     encoder_R = encoder_get_count(ENCODER_DIR_R);       // 读取右轮编码器计数值
@@ -119,7 +119,10 @@ void motor_init(void)
     pwm_init(MOTOR_PWM_L, 17000, 0);                        // 左轮PWM初始化：17KHz、占空比0
     gpio_init(MOTOR_DIR_R, GPO, GPIO_HIGH, GPO_PUSH_PULL);  // 右轮DIR GPIO初始化
     pwm_init(MOTOR_PWM_R, 17000, 0);                        // 右轮PWM初始化：17KHz、占空比0
-    pwm_init(MOTOR_PWM_M, 17000, 0);                        // 中舵机PWM初始化：17KHz、占空比0
+	
+	pwm_init(MOTOR_PWM_M, 17000, 0);                        // 负压电机PWM初始化：17KHz、占空比0
+//	pwm_init(MOTOR_PWM_M, 100, 0);                          // 负压电机PWM初始化：17KHz、占空比0
+	
 }
 
 // 函数名: encoder_init

@@ -251,7 +251,7 @@ void menu(void)
     static uint8 last_key = 0;  // 上一次按键值，用于边沿检测消抖
     uint8 key = key_scan();
 	
-	read_menu();
+//	read_menu();
 
     // 按键释放时清零记录
     if(key == 0)

@@ -10,20 +10,23 @@ extern float K2P_x;     // 方向环非线性二次比例系数
 extern float KI_x;      // 方向环积分系数
 extern float KD_x;      // 方向环微分系数
 
+extern float KP_a;
+extern float KD_a;
+extern float KG_a;
+
+extern float angle_err;
+extern float angle_out;
 extern float PID_outL;              // 左轮PID总输出
 extern float PID_outR;              // 右轮PID总输出
 
 #define MAX_DIR_OUT                 (200)
 #define MAX_SPD_OUT                 (7000)
 
-// 电机PWM死区补偿值
-// 说明: 当PID输出绝对值小于此值时，电机实际不转或转动不稳定。
-//       通过死区补偿将输出直接提升到该阈值，确保电机响应灵敏。
-//       注意: 输出为0时不补偿，以保证目标速度为0时能真正停车。
-#define MOTOR_DEAD_ZONE             (1300)
-
+#define MOTOR_DEAD_ZONE_L           (1100)
+#define MOTOR_DEAD_ZONE_R           (888)
 
 int16 PID_track(void);                             // 循迹PID
+void PID_angle(int16 target_angle);
 int16 PID_L(void);          // 左轮增量式速度PID
 int16 PID_R(void);          // 右轮增量式速度PID
 int16 PID_L_pos(void);      // 左轮位置式速度PID（含快速制动与坡道保持）
