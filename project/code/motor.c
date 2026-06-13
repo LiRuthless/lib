@@ -15,8 +15,8 @@ int16 real_speed_R = 0;         // 右轮实际速度（编码器滤波后）
 int16 base_speed = 0;      		// 基础目标速度
 int16 fan_duty = 0;				// 负压电机PWM占空比
 
-int32 distance_L = 0;
-int32 distance_R = 0;	
+int32 distance_L = 0;				// 左轮累计行驶距离
+int32 distance_R = 0;				// 右轮累计行驶距离
 int32 Distance = 0;					// 累计行驶距离（左右轮平均）
 
 float alpha = 0.65;              // 编码器速度低通滤波系数
@@ -26,17 +26,22 @@ LowPassFilter filt_encoder_R;   // 右轮编码器低通滤波器
 
 
 
+// 函数名: speed_control
+// 功能: 根据方向PID输出分配左右轮目标速度（差速控制）
+// 参数: pid_out - 方向PID输出（正值偏右需左转，负值偏左需右转）
+// 说明: 采用非对称差速策略：转向内侧轮减速倍数为2，外侧轮加速倍数为1，
+//       可在过弯时降低内侧轮速度、防止冲出赛道。
 void speed_control(int16 pid_out)
 {
 	if( pid_out >= 0 )
 	{
-		target_speed_L = base_speed - 2 * pid_out;    // 左轮减速
-		target_speed_R = base_speed + 1 * pid_out;    // 右轮加速
+		target_speed_L = base_speed - 2 * pid_out;    // 左轮减速（内侧轮）
+		target_speed_R = base_speed + 1 * pid_out;    // 右轮加速（外侧轮）
 	}
 	else
 	{
-		target_speed_L = base_speed - 1 * pid_out;    // 左轮加速
-		target_speed_R = base_speed + 2 * pid_out;    // 右轮减速
+		target_speed_L = base_speed - 1 * pid_out;    // 左轮加速（外侧轮）
+		target_speed_R = base_speed + 2 * pid_out;    // 右轮减速（内侧轮）
 	}
 }
 

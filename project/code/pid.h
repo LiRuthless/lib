@@ -10,14 +10,14 @@ extern float K2P_x;     // 方向环非线性二次比例系数
 extern float KI_x;      // 方向环积分系数
 extern float KD_x;      // 方向环微分系数
 
-extern float KP_a;
-extern float KD_a;
-extern float KG_a;
+extern float KP_a;            // 角度环比例系数
+extern float KD_a;            // 角度环微分系数
+extern float KG_a;            // 角度环陀螺仪阻尼系数
 
-extern float angle_err;
-extern float angle_out;
-extern float PID_outL;              // 左轮PID总输出
-extern float PID_outR;              // 右轮PID总输出
+extern float angle_err;       // 角度环当前误差
+extern float angle_out;       // 角度环输出
+extern float PID_outL;        // 左轮速度PID总输出
+extern float PID_outR;        // 右轮速度PID总输出
 
 #define MAX_DIR_OUT                 (200)
 #define MAX_SPD_OUT                 (9000)

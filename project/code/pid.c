@@ -12,18 +12,18 @@ float K2P_x = 0.0f;             // 方向环非线性二次比例系数
 float KI_x = 0.0f;              // 方向环积分系数（预留）
 float KD_x = 0.0f;              // 方向环微分系数
 
-float KP_a = 0.0f;
-float KD_a = 0.0f;
-float KG_a = 0.0f;
+float KP_a = 0.0f;              // 角度环比例系数
+float KD_a = 0.0f;              // 角度环微分系数
+float KG_a = 0.0f;              // 角度环陀螺仪阻尼系数
 
 float KP_v = 0.0f;              // 速度环比例系数
 float KI_v = 0.0f;              // 速度环积分系数
 float KD_v = 0.0f;              // 速度环微分系数
 
-float angle_err = 0.0;
-float angle_out = 0.0;
-float PID_outL = 0.0f;              // PID总输出
-float PID_outR = 0.0f;              // PID总输出
+float angle_err = 0.0;          // 角度环当前误差
+float angle_out = 0.0;          // 角度环输出
+float PID_outL = 0.0f;          // 左轮速度PID总输出
+float PID_outR = 0.0f;          // 右轮速度PID总输出
 
 
 // 函数名: PID_track
@@ -62,6 +62,11 @@ int16 PID_track(void)
 }
 
 
+// 函数名: PID_angle
+// 功能: 角度环PD控制器（用于环岛等需要固定角度转向的场景）
+// 参数: target_angle - 目标角度（单位：度）
+// 说明: 根据目标角度与当前角度的偏差计算方向输出，并叠加陀螺仪阻尼项。
+//       输出通过 speed_control() 分配左右轮速度，实现按角度转向。
 void PID_angle(int16 target_angle)
 {
 	static float angle_err_last = 0.0;
