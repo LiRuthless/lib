@@ -33,53 +33,56 @@ int16 track_out = 0;     // 方向控制输出（由循迹PID计算）
 
 void roundabout_test(void)
 {   
-
-    if(current_state == STATE_NORMAL)  // 当前处于正常循迹状态 
+	
+    if(current_state == STATE_NORMAL)	// 当前处于正常循迹状态 
     {		
-//		angle_out = 0;
+		angle_out = 0;
+		
 		track_test();
 		
 		L_enter_judge();//检测预进	
     }
 	
-	if(current_state == ISLAND_LPREENTER)  // 当前处于左预入环状态 
+	if(current_state == ISLAND_LPREENTER)	// 当前处于左预入环状态 
     {
-//		track_out = 0;
-		PID_angle( 0 );
-		base_speed = 70; 
+		track_out = 0;
 		
-		if(round_flag == 0)  round_flag = 1;  //让进岛进入冷却				
+		base_speed = 70; 
+		angle_x = 0;
+		distance_L = distance_R = Distance = 0;  
+		
+		PID_angle( 0 );		
 		
 	    L_ahead_judge();//是否满足距离	
 	}
 	
-	if(current_state == ISLAND_TURN_LEFT)  //距离到了 开始打角5  // 当前处于左转入环状态 
+	if(current_state == ISLAND_TURN_LEFT)	//距离到了 开始打角
 	{
-
 		PID_angle( -enter_angle1 );
 		
 	    entered_judge();// 检测打角是否完成
 	}	
 	
-	if(current_state == ISLAND_IN)  // 当前处于环岛内部循迹状态 		
+	if(current_state == ISLAND_IN)		// 当前处于环岛内部循迹状态 		
 	{
-//		x_weight=1; y_weight=0.3; abs_weight=0.3;
 		track_test();
 		
 		pre_out_judge();
 	}
 	
-	if(current_state == ISLAND_EXIT)  // 当前处于出环状态 
+	if(current_state == ISLAND_EXIT)	// 当前处于出环状态 
 	{
 		track_out=0;  // 关闭巡线	
-				
+		
+		base_speed = 70; 
+		distance_L = distance_R = Distance = 0; 
+		
 		PID_angle( -pre_out_angle1 );
-	    base_speed = 70; 
 		
 		exit_judge();
 	}
 	
-	if(current_state == ISLAND_OUT)
+	if(current_state == ISLAND_OUT)		//距离到了 完成出环
 	{
 		track_out = 0;
 		base_speed = 70;
@@ -96,12 +99,23 @@ void track_test(void)
 {
 	read_adc();     // 读取四路电感ADC值 
 	
-	fan_duty = 6000;       // 初始化负压电机占空比为60%占空比
-    base_speed = 200;      // 设置基础目标速度
+	fan_duty = 5500;       // 初始化负压电机占空比为60%占空比
+	
+//	base_speed = 600; 
+//	KP_x = 0.04;
+//	KD_x = 0.15;
+	
+//	base_speed = 350; 
+//	KP_x = 1.0;
+//	KD_x = 16.65;
+	
+//	base_speed = 300; 
+//	KP_x = 0.7;
+//	KD_x = 9.65;
 
-	KP_x = 0.04;           // 设置方向环比例系数
-	KD_x = 0.15;           // 设置方向环微分系数
-
+//	base_speed = 200; 
+//	KP_x = 1.45;
+//	KD_x = 7.45;
 
 	
     // 检测电感值总和是否大于阈值（判断是否在赛道上）
@@ -110,16 +124,8 @@ void track_test(void)
         // 在赛道上，计算循迹偏差并差速控制
 		track_error = get_track_error();
         track_out = PID_track();
-        
-        // 根据偏差方向分配左右轮速度
-        if( track_out >= 0 ){
-            target_speed_L = base_speed - 3 * track_out;    // 左轮减速
-            target_speed_R = base_speed + 1 * track_out;    // 右轮加速
-        }
-        else{
-            target_speed_L = base_speed - 1 * track_out;    // 左轮加速
-            target_speed_R = base_speed + 3 * track_out;    // 右轮减速
-        }
+		
+		speed_control(track_out);	// 根据偏差方向分配左右轮速度
 		
 		pwm_set_duty(MOTOR_PWM_M, fan_duty); // 设置负压电机占空比
 		
@@ -257,6 +263,11 @@ void gyro_test(void)
 	gyro_x = imu660rb_gyro_transition(imu660rb_gyro_x);
 	gyro_y = imu660rb_gyro_transition(imu660rb_gyro_y);
 	gyro_z = imu660rb_gyro_transition(imu660rb_gyro_z);
+	
+//	if( 
+//		PID_angle( 0 );
+//	
+	
 	
 	sprintf(uart,"%f,%f,%f,",gyro_x,gyro_y,gyro_z);
 	uart_write_buffer(UART_1,uart,strlen(uart));

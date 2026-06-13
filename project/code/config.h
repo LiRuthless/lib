@@ -11,6 +11,7 @@
 #include "eeprom.h"
 #include "gyroscope.h"
 #include "roundabout.h"
+#include "element.h"
 
 
 #define PIT_TR      (TIM3_PIT)      // 循迹控制中断（5ms）

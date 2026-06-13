@@ -16,9 +16,9 @@
 extern uint8 current_state;
 extern uint8 round_flag;//用作判断进出岛
 
-extern int8 enter_angle1;
-extern int8 pre_out_angle1; // 环岛1预出环角度
-extern int8 out_angle1;	 // 环岛1出环目标角度
+extern int16 enter_angle1;
+extern int16 pre_out_angle1; // 环岛1预出环角度
+extern int16 out_angle1;	 // 环岛1出环目标角度
 
 //extern uint8 choose_flag; 			// 环岛使能标志
 //extern uint8 round1_flag; 			// 环岛1方向标志（0左/1右）

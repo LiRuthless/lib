@@ -73,16 +73,7 @@ void PID_angle(int16 target_angle)
 	/*		40 * 0.5	+		0		-	7 *		gyro_yy()		*/
 	angle_err_last = angle_err;
 	
-	if( angle_out >= 0 )
-	{
-		target_speed_L = base_speed + angle_out;    // 左轮减速
-		target_speed_R = base_speed - angle_out;    // 右轮加速
-	}
-    else
-	{
-		target_speed_L = base_speed + angle_out;    // 左轮加速
-		target_speed_R = base_speed - angle_out;    // 右轮减速
-	}
+	speed_control(angle_out);
 }
 
 
@@ -245,8 +236,7 @@ int16 PID_R_pos(void)
     
     P_outR = KP_v * (float)errorR;
     I_outR += KI_v * (float)errorR;
-    
-    
+     
     // 积分限幅：给死区前馈和P项留出余量，防止暗饱和
     if(I_outR >  (MAX_SPD_OUT - MOTOR_DEAD_ZONE_R)) I_outR =  (MAX_SPD_OUT - MOTOR_DEAD_ZONE_R);
     if(I_outR < -(MAX_SPD_OUT - MOTOR_DEAD_ZONE_R)) I_outR = -(MAX_SPD_OUT - MOTOR_DEAD_ZONE_R);

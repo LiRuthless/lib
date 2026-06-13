@@ -24,6 +24,22 @@ float alpha = 0.65;              // 编码器速度低通滤波系数
 LowPassFilter filt_encoder_L;   // 左轮编码器低通滤波器
 LowPassFilter filt_encoder_R;   // 右轮编码器低通滤波器
 
+
+
+void speed_control(int16 pid_out)
+{
+	if( pid_out >= 0 )
+	{
+		target_speed_L = base_speed - 2 * pid_out;    // 左轮减速
+		target_speed_R = base_speed + 1 * pid_out;    // 右轮加速
+	}
+	else
+	{
+		target_speed_L = base_speed - 1 * pid_out;    // 左轮加速
+		target_speed_R = base_speed + 2 * pid_out;    // 右轮减速
+	}
+}
+
 // 函数名: motor_control
 // 功能: 电机控制函数（速度环输出执行）
 // 说明: 调用左右轮PID控制器计算输出，通过DIR引脚控制方向，
@@ -78,7 +94,7 @@ void read_encoder(void)
           encoder_R = 0;     // 右轮编码器累计值		 
     
     encoder_L = -encoder_get_count(ENCODER_DIR_L);      // 读取左轮编码器计数值（取反）
-    encoder_R = encoder_get_count(ENCODER_DIR_R);       // 读取右轮编码器计数值
+    encoder_R =  encoder_get_count(ENCODER_DIR_R);       // 读取右轮编码器计数值
 
 //    if (gpio_get_level(ENCODER_DIR_DIR_L) == 1)       // 方向检测（已禁用）
 //    {
@@ -96,14 +112,6 @@ void read_encoder(void)
     distance_L += real_speed_L;     
     distance_R += real_speed_R;            
     Distance = (distance_L + distance_R) / 2;
-	
-	
-//    if(menu_flag == 4)
-//    {
-//        test_ldistance = test_ldistance + L_speed;
-//        test_rdistance = test_rdistance + R_speed;
-//        test_distance = (test_ldistance + test_rdistance);
-//    }
 
     encoder_clear_count(ENCODER_DIR_L);     // 清除左轮编码器计数值
     encoder_clear_count(ENCODER_DIR_R);     // 清除右轮编码器计数值

@@ -31,6 +31,7 @@ extern int32 distance_R;
 
 extern float alpha;             // 低通滤波系数
 
+void speed_control(int16 pid_out);
 void motor_control(void);       // 电机控制
 void read_encoder(void);        // 读取编码器
 

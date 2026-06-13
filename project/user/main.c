@@ -26,14 +26,9 @@ void main()
     KP_v  = 15.0;       				// 速度环比例系数			//15.0  0.85
     KI_v  = 0.85;      					// 速度环积分系数			//3.46  0.39!!!!!!!
 	
-	
-//    KP_x  = 0.2;       // 方向环比例系数				300--p0.2--d0.08
-//    K2P_x = 0.00;       // 方向环非线性系数
-//    KD_x  = 0.08;       // 方向环微分系数
 
-//    base_speed = 0;   // 设置基础速度
+//  base_speed = 0;   // 设置基础速度
 //	fan_duty = 4000;       // 初始化负压电机占空比为60%占空比
-
 
 
     // 主循环
@@ -41,17 +36,8 @@ void main()
     {
 		key_start();
 		
-		Start_flag = 1;
-
-//		pwm_set_duty(MOTOR_PWM_M, 1400); // 设置负压电机占空比
-//	
-//      adc1 = adc_mean_filter_convert(KEY_CHANNEL1, 3);
-//      adc2 = adc_mean_filter_convert(KEY_CHANNEL2, 3);
-        
 //      menu();  // 菜单处理函数，包含按键扫描和功能选择
-				
 
-		
 //		sprintf(uart, "%d,%d,%d,%d,", adc_filted[0], adc_filted[1], adc_filted[2], adc_filted[3]);
 //		uart_write_buffer(UART_1,uart,strlen(uart));
 //	
@@ -72,31 +58,25 @@ void main()
 void pit_track (void)
 {
 
-//	bb++;								// 调试用计数器
-	sprintf(uart,"%d,%d,%f,",target_speed_L,real_speed_L,PID_outL);
-	uart_write_buffer(UART_1,uart,strlen(uart));
-		
-	sprintf(uart,"%d,%d,%f\n",target_speed_R,real_speed_R,PID_outR);
- 	uart_write_buffer(UART_1,uart,strlen(uart));
+
 	if( Start_flag )
 	{
 //		roundabout_test();
-//		track_test();
+		track_test();
 //		speed_test();
 // 		speed_test2();
 //		adc_test();
 //		gyro_test();
-
 	}
-//	
-//	    // 未启动状态下停止电机
-//    if( !Run_flag || !Start_flag )
-//    {
-//		target_speed_L = 0;
-//		target_speed_R = 0;
-//		pwm_set_duty(MOTOR_PWM_M, 1000); // 负压电机回默认占空比
-//    }
-//	
+
+	    // 未启动状态下停止电机
+    if( !Run_flag || !Start_flag )
+    {
+		target_speed_L = 0;
+		target_speed_R = 0;
+		pwm_set_duty(MOTOR_PWM_M, 1000); // 负压电机回默认占空比
+    }
+	
 
 }                                                       
 
@@ -109,10 +89,13 @@ void pit_speed (void)
 {
 	CLR_WDT = 1;        // 在2ms中断中喂狗，不受主循环menu()耗时影响
 
-    read_encoder();     // 读取编码器并计算实际速度      
+    read_encoder();     
 	read_gyro_angle();
-    motor_control();    // 执行电机PID控制
+    motor_control();    
    	
-//	sprintf(uart, "%d,%d\r\n", target_speed_L, target_speed_R);
-//	uart_write_buffer(UART_1, uart, strlen(uart)); 
+//	sprintf(uart,"%d,%d,%f,",target_speed_L,real_speed_L,PID_outL);
+//	uart_write_buffer(UART_1,uart,strlen(uart));
+//		
+//	sprintf(uart,"%d,%d,%f\n",target_speed_R,real_speed_R,PID_outR);
+// 	uart_write_buffer(UART_1,uart,strlen(uart));
 }

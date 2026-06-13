@@ -20,7 +20,7 @@ extern float PID_outL;              // 左轮PID总输出
 extern float PID_outR;              // 右轮PID总输出
 
 #define MAX_DIR_OUT                 (200)
-#define MAX_SPD_OUT                 (7000)
+#define MAX_SPD_OUT                 (9000)
 
 #define MOTOR_DEAD_ZONE_L           (1100)
 #define MOTOR_DEAD_ZONE_R           (888)

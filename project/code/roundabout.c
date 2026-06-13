@@ -2,15 +2,15 @@
 
 
 uint8 current_state = STATE_NORMAL;
-uint8 round1_flag = 0; // 环岛1方向标志（0左/1右）
-uint8 round_flag = 0;//用作判断进出岛
+uint8 round1_flag = 0; 			// 环岛1方向标志（0左/1右）
+uint8 round_flag = 0;			//用作判断进出岛
 
-uint16 enter_distance1 = 5500; // 环岛1入环距离
-uint16 out_distance1 = 40000; // 环岛1出环距离
+uint16 enter_distance1 = 5000; 	// 环岛1入环距离
+uint16 out_distance1 = 5000; 	// 环岛1出环距离
 
-int8 enter_angle1 = 0;
-int8 pre_out_angle1=100; // 环岛1预出环角度
-int8 out_angle1=110; // 环岛1出环目标角度
+int16 enter_angle1 = 40;
+int16 pre_out_angle1 = 320; 		// 环岛1预出环角度
+int16 out_angle1 = 360; 			// 环岛1出环目标角度
 
 
 
@@ -18,9 +18,7 @@ void L_enter_judge(void)
 {
 	if(round_flag == 0 && round1_flag == 0 && (adc_filted[0] > 2300 &&adc_filted[1] > 400 &&adc_filted[2] > 1500 &&adc_filted[3] > 1500))
 	{
-		base_speed=0;
-		distance_L = distance_R = Distance = 0;  
-		angle_x = 0;
+		round_flag = 1;
 		current_state = ISLAND_LPREENTER;
 	}
 }		
@@ -30,16 +28,14 @@ void L_ahead_judge(void)
 {
 	if(Distance >= enter_distance1)
 	{
-	current_state = ISLAND_TURN_LEFT;
+		current_state = ISLAND_TURN_LEFT;
 	}
-	
 }
 
 void entered_judge(void)
 {
 	if (float_abs(angle_err) < 2.0)  // 角度误差小于2度，认为入环姿态已调整好 
 	{
-//		x_weight=1;y_weight=1;abs_weight=1;
 		current_state = ISLAND_IN;
 	}		
 }
@@ -48,9 +44,6 @@ void pre_out_judge(void)
 {
 	if (angle_x > (pre_out_angle1) || angle_x < -(pre_out_angle1)) 
 	{
-		distance_L = distance_R = Distance = 0; 
-		base_speed = 70; 
-
 		current_state = ISLAND_EXIT;
 	}
 }
@@ -58,7 +51,6 @@ void exit_judge(void)
 {
 	if (float_abs(angle_err) < 2.0)  // 角度误差小于2度，认为入环姿态已调整好 
 	{
-//		x_weight=1;y_weight=1;abs_weight=1;
 		current_state = ISLAND_OUT;
 	}		
 }
@@ -67,9 +59,8 @@ void outed_judge(void)
 {
 	if( Distance > out_distance1 )  // 行驶足够距离，确认出环完成 
 	{
-//		y_weight=17;abs_weight=15;
-		current_state = STATE_NORMAL;
 		round_flag = 0;		
+		current_state = STATE_NORMAL;
 	}
 }
 
