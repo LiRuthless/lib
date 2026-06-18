@@ -43,7 +43,7 @@ int16 get_track_error(void)
         return 0;  		// 避免除零：电感值全为0时返回0偏差
     }
 	
-	diff = ( 100 * ( 10 * left_diff + 20 * right_diff) / (10 * denominator ));
+	diff = ( 100 * ( 10 * left_diff + 10 * right_diff) / (10 * denominator ));
     
     return diff;
 }

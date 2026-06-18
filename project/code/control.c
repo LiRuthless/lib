@@ -25,7 +25,7 @@
 //                           `=---='                           \\
 // //   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  \\ \\
 // // //      佛祖保佑      永无BUG      永不修改        \\ \\ \\
-// // // // // // || || || || || || || || || || \\ \\ \\ \\ \\ */
+// // // // // // || || || || || || || || || || \\ \\ \\ \\ \\ */   
 #include "config.h"
 
 int16 track_out = 0;     // 方向控制输出（由循迹PID计算）
@@ -33,6 +33,8 @@ int16 track_out = 0;     // 方向控制输出（由循迹PID计算）
 
 void roundabout_test(void)
 {   
+	KP_a=0.32;
+	KG_a=0.1;
 	
     if(current_state == STATE_NORMAL)	// 当前处于正常循迹状态 
     {		
@@ -47,9 +49,7 @@ void roundabout_test(void)
     {
 		track_out = 0;
 		
-		base_speed = 70; 
-		angle_x = 0;
-		distance_L = distance_R = Distance = 0;  
+		base_speed = 60; 
 		
 		PID_angle( 0 );		
 		
@@ -58,7 +58,9 @@ void roundabout_test(void)
 	
 	if(current_state == ISLAND_TURN_LEFT)	//距离到了 开始打角
 	{
+		
 		PID_angle( -enter_angle1 );
+		//base_speed = 0; //G
 		
 	    entered_judge();// 检测打角是否完成
 	}	
@@ -74,9 +76,9 @@ void roundabout_test(void)
 	{
 		track_out=0;  // 关闭巡线	
 		
-		base_speed = 70; 
-		distance_L = distance_R = Distance = 0; 
-		
+		base_speed = 60; 
+//		 
+//		
 		PID_angle( -pre_out_angle1 );
 		
 		exit_judge();
@@ -85,12 +87,13 @@ void roundabout_test(void)
 	if(current_state == ISLAND_OUT)		//距离到了 完成出环
 	{
 		track_out = 0;
-		base_speed = 70;
+		base_speed = 60;
 	    PID_angle( -out_angle1 );
 		
 		outed_judge(); 
 	}	
 }
+
 
 
 
@@ -116,6 +119,10 @@ void track_test(void)
 //	base_speed = 200; 
 //	KP_x = 1.45;
 //	KD_x = 7.45;
+	
+	base_speed = 120; 
+	KP_x = 1.45;
+	KD_x = 7.45;
 
 	
     // 检测电感值总和是否大于阈值（判断是否在赛道上）
@@ -258,23 +265,35 @@ static uint16 cnt = 0;
 // 说明: 读取IMU陀螺仪数据并通过串口输出，用于传感器调试。
 void gyro_test(void)
 {
-	imu660rb_get_gyro();
+//	imu660rb_get_gyro();
+
+//	gyro_x = imu660rb_gyro_transition(imu660rb_gyro_x);
+//	gyro_y = imu660rb_gyro_transition(imu660rb_gyro_y);
+//	gyro_z = imu660rb_gyro_transition(imu660rb_gyro_z);
 	
-	gyro_x = imu660rb_gyro_transition(imu660rb_gyro_x);
-	gyro_y = imu660rb_gyro_transition(imu660rb_gyro_y);
-	gyro_z = imu660rb_gyro_transition(imu660rb_gyro_z);
+	static int16 angle = 0;
+	KP_a=0.3;
+	KG_a =0.1 ;
+	base_speed=70;
 	
-//	if( 
-//		PID_angle( 0 );
-//	
+	if( angle_x <= 0)
+	{
+		angle = 380;
+	}
+	if( angle_x >= 360)
+	{
+		angle = -20;	
+	}
+	 
+	PID_angle( angle );
 	
 	
-	sprintf(uart,"%f,%f,%f,",gyro_x,gyro_y,gyro_z);
+	sprintf(uart,"%f,%d,%f\n",angle_x,angle,angle_err);
 	uart_write_buffer(UART_1,uart,strlen(uart));
 		
-	sprintf(uart,"%d,%d,%d\n",imu660rb_gyro_x,imu660rb_gyro_y,imu660rb_gyro_z);
- 	uart_write_buffer(UART_1,uart,strlen(uart));
-	
+//	sprintf(uart,"%d,%d,%d\n",imu660rb_gyro_x,imu660rb_gyro_y,imu660rb_gyro_z);
+// 	uart_write_buffer(UART_1,uart,strlen(uart));
+//	
 	
 }
 
@@ -294,8 +313,14 @@ void adc_test(void)
 	sprintf(uart, "%d,%d,%d,%d,", adc_filted[0], adc_filted[1], adc_filted[2], adc_filted[3]);
  	uart_write_buffer(UART_1,uart,strlen(uart));
 	
-	sprintf(uart,"%d,%d\n",track_error,track_out);
+	sprintf(uart,"%d\n",track_error);
  	uart_write_buffer(UART_1,uart,strlen(uart));
+	
+//	sprintf(uart,"%.2f,%.2f,%.2f,",angle_x,angle_y,angle_z);
+// 	uart_write_buffer(UART_1,uart,strlen(uart));
+//	
+//	sprintf(uart,"%.2f,%.2f,%.2f\n",gyro_x,gyro_y,gyro_z);
+// 	uart_write_buffer(UART_1,uart,strlen(uart));
 	
 }
 

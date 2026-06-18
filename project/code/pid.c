@@ -78,7 +78,7 @@ void PID_angle(int16 target_angle)
 	/*		40 * 0.5	+		0		-	7 *		gyro_yy()		*/
 	angle_err_last = angle_err;
 	
-	speed_control(angle_out);
+	speed_control(-angle_out);
 }
 
 

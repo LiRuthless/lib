@@ -1,10 +1,10 @@
-﻿// ============================================================
+// ============================================================
 // 文件名: roundabout.h
 // 功能说明: 环岛（roundabout）状态宏与变量声明头文件
 // 定义环岛状态机各阶段常量，以及环岛控制相关的外部变量和函数声明。
 // ============================================================
 
-#ifndef _ROUNFABOUT_H_
+#ifndef _ROUNDABOUT_H_
 #define _ROUNDABOUT_H_
 
 
@@ -38,7 +38,7 @@ void entered_judge(void);						// 入环打角完成判断
 void pre_out_judge(void);						// 环岛预出环判断
 void exit_judge(void);							// 出环打角完成判断
 void outed_judge(void);							// 出环完成判断
-void judge(void);								// 赛道元素状态机主分支
+//void judge(void);								// 赛道元素状态机主分支
 
 
 

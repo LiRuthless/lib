@@ -15,6 +15,14 @@ extern float angle_x;			// X轴角度积分值
 extern float angle_y;			// Y轴角度积分值
 extern float angle_z;			// Z轴角度积分值
 
+extern float accel_offset_x;	 // X轴加速度零偏
+extern float accel_offset_y;	 // Y轴加速度零偏
+extern float accel_offset_z;	 // Z轴加速度零偏
+extern float gyro_offset_x; 	 // X轴陀螺仪零偏
+extern float gyro_offset_y;	 	 // Y轴陀螺仪零偏
+extern float gyro_offset_z;	 	 // Z轴陀螺仪零偏
+
+
 void read_accel_velocity(void);		// 读取加速度并积分得到速度
 void read_gyro_angle(void);			// 读取陀螺仪并积分得到角度
 void accel_calibrate(void);			// 加速度计静态零偏校准

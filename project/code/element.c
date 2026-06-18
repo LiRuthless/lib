@@ -6,3 +6,5 @@
 // ============================================================
 
 #include "config.h"
+
+//if((adc_filted[0] <480 && adc_filted[1] <50 && adc_filted[2] <50 && adc_filted[3] < 480)||he>500||gyro_y>15)
