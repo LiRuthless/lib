@@ -75,18 +75,18 @@ void key_start(void)
 // 	uart_write_buffer(UART_1,uart,strlen(uart));
 	
 
-//	while( battery < 1200 && battery > 300 )		//max1308-12.6v  min1182-11.4  1192-11.5
-//	{
-//		Start = 0;
-//		
-//		P10 = 1;
-//		system_delay_ms(100);
-//		P10 = 0;
-//		system_delay_ms(100);
+	while( battery < 1200 && battery > 300 )		//max1308-12.6v  min1182-11.4  1192-11.5
+	{
+//		Start_flag = 0;
+		
+		P10 = 1;
+		system_delay_ms(100);
+		P10 = 0;
+		system_delay_ms(100);
 
-//	battery = adc_convert(ADC_CH11_P03);
-//	battery_filt = (int16)lowpass_update(&filt_battery, (float)battery);
-//	}
+		battery = adc_convert(ADC_CH11_P03);
+		battery_filt = (int16)lowpass_update(&filt_battery, (float)battery);
+	}
 	
 	if( Start_flag )
 	{

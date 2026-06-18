@@ -2,8 +2,7 @@
 // 文件名: main.c
 // 功能说明: 主程序入口
 // 智能车电磁循迹系统主循环，包含系统初始化、PID参数设定、
-// 定时中断配置以及主循环空转。//，PWM（发出和接受）速度环的问题（电感读值，计算过程，设定值过大，预设上限）
-//电流过大，打火，复现
+// 定时中断配置以及主循环空转。
 // ============================================================
 
 #include "config.h"
@@ -27,21 +26,23 @@ void main()
     KP_v  = 15.0;       				// 速度环比例系数			//15.0  0.85
     KI_v  = 0.85;      					// 速度环积分系数			//3.46  0.39!!!!!!!
 	
+	
+//	pwm_set_duty(MOTOR_PWM_M, 1500);	//无刷负压
+	
 
 //  base_speed = 0;   // 设置基础速度
 //	fan_duty = 4000;       // 初始化负压电机占空比为60%占空比
 
-//	accel_calibrate();
-	gyro_calibrate();
 
     // 主循环
     while(1)
     {
 		key_start();
 		
- //     menu();  // 菜单处理函数，包含按键扫描和功能选择
+//      menu();  // 菜单处理函数，包含按键扫描和功能选择
 
-//		
+//		sprintf(uart, "%d,%d,%d,%d,", adc_filted[0], adc_filted[1], adc_filted[2], adc_filted[3]);
+//		uart_write_buffer(UART_1,uart,strlen(uart));
 //	
 //		sprintf(uart,"%d,%d\n",track_error,track_out);
 //		uart_write_buffer(UART_1,uart,strlen(uart));
@@ -60,35 +61,17 @@ void main()
 void pit_track (void)
 {
 
+
 	if( Start_flag )
 	{
-       
-//		sprintf(uart,"%d,%d,%d,",target_speed_L,real_speed_L,PID_outL);
-//		uart_write_buffer(UART_1,uart,strlen(uart));
-//		sprintf(uart,"%d,%d,%d\n",target_speed_R,real_speed_R,PID_outR);
-//		uart_write_buffer(UART_1,uart,strlen(uart));
-//		sprintf(uart, "%d,%d,%d,%d\n", adc_filted[0], adc_filted[1], adc_filted[2], adc_filted[3]);
-//		uart_write_buffer(UART_1,uart,strlen(uart));
-
-//	
 		roundabout_test();
 //		track_test();
 //		speed_test();
- //		speed_test2();
-//	adc_test();
+// 		speed_test2();
+//		adc_test();
 //		gyro_test();
-
 	}
 
-	if( adc_filted[0] + adc_filted[1] + adc_filted[2] + adc_filted[3] > 300 )
-    {
-        Run_flag = 1;      // 标记已启动
-    }
-    else // 电感值过低，认为出赛道或停止线
-    {    
-        Run_flag = 0;      // 清除启动标志
-		Start_flag = 0;
-    }
 	    // 未启动状态下停止电机
     if( !Run_flag || !Start_flag )
     {

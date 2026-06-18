@@ -20,12 +20,12 @@ float angle_x = 0;       // X轴角度积分值
 float angle_y = 0;       // Y轴角度积分值
 float angle_z = 0;       // Z轴角度积分值
 
-float accel_offset_x = 0;	 // X轴加速度零偏
-float accel_offset_y = 0;	 // Y轴加速度零偏
-float accel_offset_z = 0;	 // Z轴加速度零偏
-float gyro_offset_x = 0.1; 	 // X轴陀螺仪零偏
-float gyro_offset_y = 0.1;	 	 // Y轴陀螺仪零偏
-float gyro_offset_z = 0.1;	 	 // Z轴陀螺仪零偏
+static float accel_offset_x = 0;	 // X轴加速度零偏
+static float accel_offset_y = 0;	 // Y轴加速度零偏
+static float accel_offset_z = 0;	 // Z轴加速度零偏
+static float gyro_offset_x = 0.1; 	 // X轴陀螺仪零偏
+static float gyro_offset_y = 0.1;	 	 // Y轴陀螺仪零偏
+static float gyro_offset_z = 0.1;	 	 // Z轴陀螺仪零偏
 
 
 // 函数名: read_accel_velocity
@@ -77,7 +77,6 @@ void read_gyro_angle(void)
 	gyro_last_y = gyro_y;
 	gyro_last_z = gyro_z;
 	
-	
 }
 
 
@@ -114,9 +113,8 @@ void gyro_calibrate(void)
 	int16 temp[3]={0}; 		// 临时计算变量
 	int8 i=0; 				// 循环计数器
 	
-	imu660rb_get_gyro();
-	
 	for(i=0; i<samples; i++) {
+		imu660rb_get_gyro();
 		temp[0] += imu660rb_gyro_x;
         temp[1] += imu660rb_gyro_y;
         temp[2] += imu660rb_gyro_z;

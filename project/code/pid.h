@@ -22,8 +22,8 @@ extern float PID_outR;        // 右轮速度PID总输出
 #define MAX_DIR_OUT                 (200)
 #define MAX_SPD_OUT                 (9000)
 
-#define MOTOR_DEAD_ZONE_L           (1100)
-#define MOTOR_DEAD_ZONE_R           (888)
+#define MOTOR_DEAD_ZONE_L           (500)
+#define MOTOR_DEAD_ZONE_R           (500)
 
 int16 PID_track(void);                             // 循迹PID
 void PID_angle(int16 target_angle);

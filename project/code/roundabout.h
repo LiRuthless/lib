@@ -4,7 +4,7 @@
 // 定义环岛状态机各阶段常量，以及环岛控制相关的外部变量和函数声明。
 // ============================================================
 
-#ifndef _ROUNDABOUT_H_
+#ifndef _ROUNFABOUT_H_
 #define _ROUNDABOUT_H_
 
 
@@ -19,26 +19,27 @@
 #define ISLAND_RENTER 		10   				// 走距离准备右进岛（预留）
 #define ISLAND_OUT          11      			// 走距离准备出岛
 
-extern uint8 current_state;						// 当前赛道元素状态机状态
+extern uint8 roundabout_state;						// 当前赛道元素状态机状态
 extern uint8 round_flag;						// 环岛进出岛判断标志（1表示正在处理环岛）
+
+extern int8 sign_round;
 
 extern int16 enter_angle1;						// 环岛1入环初始打角角度
 extern int16 pre_out_angle1; 					// 环岛1预出环判断角度阈值
 extern int16 out_angle1;	 					// 环岛1出环目标角度
 
-//extern uint8 choose_flag; 						// 环岛使能标志
-//extern uint8 round1_flag; 						// 环岛1方向标志（0左/1右）
-//extern int16 lround_distance11; 				// 环岛1左入环距离
-//extern int16 outdistance1; 					// 环岛1出环距离
 
+void roundabout(void);
 
-void L_enter_judge(void);						// 左环岛入环条件判断
-void L_ahead_judge(void);						// 左环岛预入环阶段距离判断
+void L_roundabout_judge(void);					// 左环岛入环条件判断
+void R_roundabout_judge(void);
+
+void ahead_judge(void);						// 左环岛预入环阶段距离判断
 void entered_judge(void);						// 入环打角完成判断
 void pre_out_judge(void);						// 环岛预出环判断
 void exit_judge(void);							// 出环打角完成判断
 void outed_judge(void);							// 出环完成判断
-//void judge(void);								// 赛道元素状态机主分支
+void judge(void);								// 赛道元素状态机主分支
 
 
 

@@ -7,8 +7,16 @@
 #ifndef _CONTROL_H_
 #define _CONTROL_H_
 
-extern int16 track_out;     // 方向控制输出
+#define KERNEL_TRACKING		0
+#define KERNEL_ISLAND_L		1
+#define KERNEL_ISLAND_R		2
 
+
+extern int16 track_out;     // 方向控制输出
+extern uint8 kernel_state;
+
+
+void whole_test(void);
 void roundabout_test(void); // 环岛状态机测试与控制（基于角度环）
 void track_test(void);      // 电磁循迹主控制函数
 void speed_test2(void);     // 速度环调参测试（固定周期切换速度）

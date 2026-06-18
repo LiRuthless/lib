@@ -8,44 +8,113 @@
 #include "config.h"
 
 
-uint8 current_state = STATE_NORMAL;      // 当前赛道元素状态机状态
-uint8 round1_flag = 0;                   // 环岛1方向标志（0左/1右）
+uint8 roundabout_state = STATE_NORMAL;      // 当前赛道元素状态机状态
 uint8 round_flag = 0;                    // 环岛进出岛判断标志（1表示正在处理环岛）
 
+int8 sign_round = 1;
+
 uint16 enter_distance1 = 7000;           // 环岛1入环前直行距离
-uint16 out_distance1 = 1000000;             // 环岛1出环后直行距离
+uint16 out_distance1 = 100000;             // 环岛1出环后直行距离
 
 int16 enter_angle1 = 30;                 // 环岛1入环初始打角角度
 int16 pre_out_angle1 = 280;              // 环岛1预出环判断角度阈值
 int16 out_angle1 = 360;                  // 环岛1出环目标角度
 
 
+
+void roundabout(void)
+{
+	switch( roundabout_state )
+	{
+		case ISLAND_LPREENTER:
+			
+			base_speed = 70; 
+			PID_angle( 0 );		
+		
+			ahead_judge();//是否满足距离	
+		break;
+		
+		case ISLAND_TURN_LEFT:
+			
+			PID_angle( sign_round * enter_angle1 );
+		
+			entered_judge();// 检测打角是否完成
+		break;
+		
+		case ISLAND_IN:
+			
+			track_error = get_track_error();
+			track_out = PID_track();
+			speed_control( track_out );
+			
+			pre_out_judge();
+		break;
+		
+		case ISLAND_EXIT:
+
+			PID_angle( sign_round * pre_out_angle1 );
+			
+			exit_judge();
+		break;
+		
+		case ISLAND_OUT:
+			
+			PID_angle( sign_round * out_angle1 );
+			
+			outed_judge(); 
+		break;
+	}	
+}
+
+
+
 // 函数名: L_enter_judge
 // 功能: 左环岛入环条件判断
 // 说明: 当电感值满足左环岛特征（左外侧、左内侧、右内侧、右外侧均较强）且未进入环岛时，
 //       将状态切换为左预入环状态。
-void L_enter_judge(void)
+void L_roundabout_judge(void)
 {
-	if(round_flag == 0 && round1_flag == 0 && (adc_filted[0] > 1500&& adc_filted[1] > 600)) //&& adc_filted[2] <1000 && adc_filted[3] < 1700
+	if((adc_filted[0] > 1500 && adc_filted[1] > 600) && symmetry_x > 20 && round_flag == 0)
 	{
-		//&&(adc_filted[0]<2000&&adc_filted[4]<2000) //&& adc_filted[1] > 1200)
-		round_flag = 1; 
-		distance_L = distance_R = Distance = 0;
+		round_flag = 1;
+		roundabout_state = ISLAND_LPREENTER;
+		
+		track_out = 0;
 		angle_x = 0;
-		current_state = ISLAND_LPREENTER;
+		distance_L = distance_R = Distance = 0;
+		
+		kernel_state = KERNEL_ISLAND_L;
 	}
 }		
 
 
-// 函数名: L_ahead_judge
+void R_roundabout_judge(void)
+{
+	if((adc_filted[3] > 1500 && adc_filted[2] > 600) && symmetry_x > 20 && round_flag == 0)
+	{
+		round_flag = 1;
+		roundabout_state = ISLAND_LPREENTER;
+		
+		track_out = 0;
+		angle_x = 0;
+		distance_L = distance_R = Distance = 0;
+		
+		kernel_state = KERNEL_ISLAND_R;
+	}
+}	
+
+
+
+
+// 函数名: ahead_judge
 // 功能: 左环岛预入环阶段距离判断
 // 说明: 在预入环状态下直线行驶，当累计距离达到设定入环距离后，
 //       切换为左转入环执行状态。
-void L_ahead_judge(void)
+void ahead_judge(void)
 {
 	if(Distance >= enter_distance1)
 	{
-		current_state = ISLAND_TURN_LEFT;
+		roundabout_state = ISLAND_TURN_LEFT;
 	}
 }
 
@@ -55,9 +124,9 @@ void L_ahead_judge(void)
 //       切换为环岛内部循迹状态。
 void entered_judge(void)
 {
-	if (float_abs(angle_err) < 8.0)  // 角度误差小于2度，认为入环姿态已调整好 
+	if (float_abs(angle_err) < 5.0)  // 角度误差小于2度，认为入环姿态已调整好 
 	{
-		current_state = ISLAND_IN;
+		roundabout_state = ISLAND_IN;
 	}		
 }
 
@@ -69,8 +138,9 @@ void pre_out_judge(void)
 {
 	if (angle_x > (pre_out_angle1) || angle_x < -(pre_out_angle1)) 
 	{
-//		distance_L = distance_R = Distance = 0;
-		current_state = ISLAND_EXIT;
+		roundabout_state = ISLAND_EXIT;
+		
+		track_out = 0; 
 	}
 }
 
@@ -80,10 +150,11 @@ void pre_out_judge(void)
 //       切换为出环后直行状态。
 void exit_judge(void)
 {
-	if (float_abs(angle_err) < 8.0)  // 角度误差小于2度，认为出环姿态已调整好 
+	if (float_abs(angle_err) < 5.0)  // 角度误差小于2度，认为出环姿态已调整好 
 	{
+		roundabout_state = ISLAND_OUT;
+		
 		distance_L = distance_R = Distance = 0;
-		current_state = ISLAND_OUT;
 	}		
 }
 
@@ -96,7 +167,9 @@ void outed_judge(void)
 	if( Distance > out_distance1 )  // 行驶足够距离，确认出环完成 
 	{
 		round_flag = 0;		
-		current_state = STATE_NORMAL;
+		roundabout_state = STATE_NORMAL;
+		
+		kernel_state = KERNEL_TRACKING;
 	}
 }
 
