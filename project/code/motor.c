@@ -19,7 +19,7 @@ int32 distance_L = 0;				// 左轮累计行驶距离
 int32 distance_R = 0;				// 右轮累计行驶距离
 int32 Distance = 0;					// 累计行驶距离（左右轮平均）
 
-float alpha = 0.65;              // 编码器速度低通滤波系数
+float alpha = 0.9 ;              // 编码器速度低通滤波系数
 
 LowPassFilter filt_encoder_L;   // 左轮编码器低通滤波器
 LowPassFilter filt_encoder_R;   // 右轮编码器低通滤波器
@@ -99,7 +99,10 @@ void read_encoder(void)
           encoder_R = 0;     // 右轮编码器累计值		 
     
     encoder_L = -encoder_get_count(ENCODER_DIR_L);      // 读取左轮编码器计数值（取反）
-    encoder_R =  encoder_get_count(ENCODER_DIR_R);       // 读取右轮编码器计数值
+    encoder_R =  encoder_get_count(ENCODER_DIR_R);      // 读取右轮编码器计数值
+	
+	encoder_clear_count(ENCODER_DIR_L);     // 清除左轮编码器计数值
+    encoder_clear_count(ENCODER_DIR_R);     // 清除右轮编码器计数值
 
 //    if (gpio_get_level(ENCODER_DIR_DIR_L) == 1)       // 方向检测（已禁用）
 //    {
@@ -117,9 +120,6 @@ void read_encoder(void)
     distance_L += real_speed_L;     
     distance_R += real_speed_R;            
     Distance = (distance_L + distance_R) / 2;
-
-    encoder_clear_count(ENCODER_DIR_L);     // 清除左轮编码器计数值
-    encoder_clear_count(ENCODER_DIR_R);     // 清除右轮编码器计数值
 }
 
 // 函数名: motor_init
@@ -133,7 +133,8 @@ void motor_init(void)
     gpio_init(MOTOR_DIR_R, GPO, GPIO_HIGH, GPO_PUSH_PULL);  // 右轮DIR GPIO初始化
     pwm_init(MOTOR_PWM_R, 17000, 0);                        // 右轮PWM初始化：17KHz、占空比0
 	
-	pwm_init(MOTOR_PWM_M, 17000, 0);                        // 负压电机PWM初始化：17KHz、占空比0
+//	pwm_init(MOTOR_PWM_M, 17000, 0);                        // 负压电机PWM初始化：17KHz、占空比0
+	gpio_init(MOTOR_PWM_M, GPO, GPIO_LOW, GPO_PUSH_PULL);
 //	pwm_init(MOTOR_PWM_M, 100, 0);                          // 负压电机PWM初始化：17KHz、占空比0
 	
 }

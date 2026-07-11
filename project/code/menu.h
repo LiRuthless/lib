@@ -35,4 +35,6 @@ uint8 key_scan(void);                               // ADC按键扫描
 void key_init(void);
 void menu(void);                                    // 主菜单显示与处理
 
+void adc_menu(void);
+
 #endif

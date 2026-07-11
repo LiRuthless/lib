@@ -19,7 +19,7 @@ extern float angle_out;       // 角度环输出
 extern float PID_outL;        // 左轮速度PID总输出
 extern float PID_outR;        // 右轮速度PID总输出
 
-#define MAX_DIR_OUT                 (200)
+#define MAX_DIR_OUT                 (1000)
 #define MAX_SPD_OUT                 (9000)
 
 #define MOTOR_DEAD_ZONE_L           (500)

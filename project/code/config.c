@@ -13,6 +13,9 @@ uint8 dat[32];						// 串口数据接收缓冲区
 int16 battery = 0;					// 电池电压ADC原始值
 int16 battery_filt = 0;				// 电池电压滤波值
 
+int32 time = 0;
+
+bit key_flag = 0;
 bit Start_flag = 0;              // 启动标志位（按键控制）
 bit Run_flag = 0;                // 运行标志位（赛道检测控制）
 
@@ -43,8 +46,8 @@ void All_init(void)
 	
 	imu660rb_init();					// 初始化IMU660RB六轴传感器
 	
-    pit_ms_init(PIT_TR, 5);    // 初始化5ms定时中断（循迹控制）
-    pit_ms_init(PIT_SP, 2);    // 初始化2ms定时中断（速度环）
+//    pit_ms_init(PIT_TR, 2);    // 初始化5ms定时中断（循迹控制）
+//    pit_ms_init(PIT_SP, 2);    // 初始化2ms定时中断（速度环）
 }
 
 
@@ -60,7 +63,7 @@ void key_start(void)
 	cur_key = gpio_get_level(IO_P22);
 
 	if(last_key && !cur_key){		 // 检测到下降沿
-		Start_flag = !Start_flag;
+		key_flag = !key_flag;
 	}
 	
 	last_key = cur_key;
@@ -75,9 +78,9 @@ void key_start(void)
 // 	uart_write_buffer(UART_1,uart,strlen(uart));
 	
 
-	while( battery < 1200 && battery > 300 )		//max1308-12.6v  min1182-11.4  1192-11.5
+	while( battery_filt < 1200 && battery_filt > 300 )		//max1308-12.6v  min1182-11.4  1192-11.5
 	{
-//		Start_flag = 0;
+		Start_flag = 0;
 		
 		P10 = 1;
 		system_delay_ms(100);
@@ -88,12 +91,36 @@ void key_start(void)
 		battery_filt = (int16)lowpass_update(&filt_battery, (float)battery);
 	}
 	
-	if( Start_flag )
-	{
-		PID_outL = 0.0;				// 启动时清零左轮PID累计输出
-		PID_outR = 0.0;				// 启动时清零右轮PID累计输出
-	}
+//	if( Start_flag )
+//	{
+//		PID_outL = 0.0;				// 启动时清零左轮PID累计输出
+//		PID_outR = 0.0;				// 启动时清零右轮PID累计输出
+//	}
 }
+
+uint8 battery_voltage_get(void)
+{
+    static uint32 low_power_num = 0;
+	
+	battery = adc_convert(ADC_CH11_P03);
+	battery_filt = (int16)lowpass_update(&filt_battery, (float)battery);
+	
+    if(battery_filt < 1200 && battery_filt > 300)
+    {
+        low_power_num++;
+        if((2000 ) < (low_power_num / 20))		// 2s都超过电压保护值，则进行停机保护
+        {
+           return 1;   
+        }
+    }
+    else
+    {
+        low_power_num = 0;
+    }
+
+	return 0;
+}
+
 
 // 函数名: uart_adjust
 // 功能: 串口无线调参解析
@@ -123,7 +150,7 @@ void uart_adjust(void)
 		case 'x':
 			switch( dat[1] ){
 				case 'p':  KP_x = figure;	break;
-				case 'd':  KI_x = figure;	break;
+				case 'd':  KD_x = figure;	break;
 			}
 		break;	
 	}

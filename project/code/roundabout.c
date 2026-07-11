@@ -47,15 +47,15 @@ void roundabout(void)
 			track_out = PID_track();
 			speed_control( track_out );
 			
-			pre_out_judge();
-		break;
-		
-		case ISLAND_EXIT:
-
-			PID_angle( sign_round * pre_out_angle1 );
-			
 			exit_judge();
 		break;
+		
+//		case ISLAND_EXIT:
+
+//			PID_angle( sign_round * pre_out_angle1 );
+//			
+//			exit_judge();
+//		break;
 		
 		case ISLAND_OUT:
 			
@@ -78,12 +78,11 @@ void L_roundabout_judge(void)
 	{
 		round_flag = 1;
 		roundabout_state = ISLAND_LPREENTER;
+		kernel_state = KERNEL_ISLAND_L;
 		
 		track_out = 0;
 		angle_x = 0;
 		distance_L = distance_R = Distance = 0;
-		
-		kernel_state = KERNEL_ISLAND_L;
 	}
 }		
 
@@ -94,12 +93,11 @@ void R_roundabout_judge(void)
 	{
 		round_flag = 1;
 		roundabout_state = ISLAND_LPREENTER;
+		kernel_state = KERNEL_ISLAND_R;
 		
 		track_out = 0;
 		angle_x = 0;
-		distance_L = distance_R = Distance = 0;
-		
-		kernel_state = KERNEL_ISLAND_R;
+		distance_L = distance_R = Distance = 0;		
 	}
 }	
 
@@ -112,7 +110,7 @@ void R_roundabout_judge(void)
 //       切换为左转入环执行状态。
 void ahead_judge(void)
 {
-	if(Distance >= enter_distance1)
+	if( Distance >= enter_distance1 ) 
 	{
 		roundabout_state = ISLAND_TURN_LEFT;
 	}
@@ -124,7 +122,7 @@ void ahead_judge(void)
 //       切换为环岛内部循迹状态。
 void entered_judge(void)
 {
-	if (float_abs(angle_err) < 5.0)  // 角度误差小于2度，认为入环姿态已调整好 
+	if ( float_abs(angle_err) < 5.0 )  // 角度误差小于2度，认为入环姿态已调整好 
 	{
 		roundabout_state = ISLAND_IN;
 	}		
@@ -136,7 +134,7 @@ void entered_judge(void)
 //       认为已对准出口，切换为出环执行状态。
 void pre_out_judge(void)
 {
-	if (angle_x > (pre_out_angle1) || angle_x < -(pre_out_angle1)) 
+	if ( float_abs(angle_x) > pre_out_angle1 ) 
 	{
 		roundabout_state = ISLAND_EXIT;
 		
@@ -150,7 +148,7 @@ void pre_out_judge(void)
 //       切换为出环后直行状态。
 void exit_judge(void)
 {
-	if (float_abs(angle_err) < 5.0)  // 角度误差小于2度，认为出环姿态已调整好 
+	if ( float_abs(angle_err) < 5.0 )  // 角度误差小于2度，认为出环姿态已调整好 
 	{
 		roundabout_state = ISLAND_OUT;
 		

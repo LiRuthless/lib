@@ -10,6 +10,9 @@
 
 
 void element_judge(void);
+void crossroads_judge(void);
+void teeterboard_judge(void);
+
 
 
 #endif

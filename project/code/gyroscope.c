@@ -23,9 +23,9 @@ float angle_z = 0;       // Z轴角度积分值
 static float accel_offset_x = 0;	 // X轴加速度零偏
 static float accel_offset_y = 0;	 // Y轴加速度零偏
 static float accel_offset_z = 0;	 // Z轴加速度零偏
-static float gyro_offset_x = 0.1; 	 // X轴陀螺仪零偏
-static float gyro_offset_y = 0.1;	 	 // Y轴陀螺仪零偏
-static float gyro_offset_z = 0.1;	 	 // Z轴陀螺仪零偏
+static float gyro_offset_x = 0.1;	 // X轴陀螺仪零偏
+static float gyro_offset_y = 0.1;	 // Y轴陀螺仪零偏
+static float gyro_offset_z = 0.1;	 // Z轴陀螺仪零偏
 
 
 // 函数名: read_accel_velocity
@@ -86,7 +86,7 @@ void read_gyro_angle(void)
 void accel_calibrate(void)
 {
 	const int8 samples = 100;
-	int16 temp[3]={0}; 		// 临时计算变量
+	int32 temp[3]={0}; 		// 临时计算变量
 	int8 i=0; 				// 循环计数器
 	
 	for(i=0; i<samples; i++) {
@@ -110,7 +110,7 @@ void accel_calibrate(void)
 void gyro_calibrate(void)
 {
 	const int8 samples = 100;
-	int16 temp[3]={0}; 		// 临时计算变量
+	int32 temp[3]={0}; 		// 临时计算变量
 	int8 i=0; 				// 循环计数器
 	
 	for(i=0; i<samples; i++) {

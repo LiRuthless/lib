@@ -34,20 +34,35 @@ uint8 kernel_state = KERNEL_TRACKING;
 
 void whole_test(void)
 {   
-	read_adc();     // 读取四路电感ADC值 
+	read_adc();     // 读取四路电感ADC值  
 	
-	KP_a = 1;
+	KP_a = 0.5;
 	KD_a = 0;
 	KG_a = 0;
 	
-	fan_duty = 6000;       // 初始化负压电机占空比为60%占空比
+//	base_speed = 350; 
+//	KP_x = 1.0;
+//	KD_x = 16.65;
+	
+//	base_speed = 300; 
+//	KP_x = 0.7;
+//	KD_x = 9.65;
+
+//	KP_x = 1.45;
+//	KD_x = 7.45;
+	
+	base_speed = 200; 
+	KP_x = 0.5;
+	K2P_x = 0.00;
+	KD_x = 10.0;
+	
+//	fan_duty = 6000;       // 初始化负压电机占空比为60%占空比
 	
 	if( adc_filted[0] + adc_filted[1] + adc_filted[2] + adc_filted[3] > 300 )
     {
         Run_flag = 1;      // 标记已启动
-		pwm_set_duty(MOTOR_PWM_M, fan_duty); // 设置负压电机占空比
 		
-		element_judge();
+//		element_judge();
 		
 		switch( kernel_state )
 		{
@@ -74,11 +89,10 @@ void whole_test(void)
 			break;
 			
 		}
-	
-		
     }
     else // 电感值过低，认为出赛道或停止线
     {    
+		key_flag = 0;
         Run_flag = 0;      // 清除启动标志
 		Start_flag = 0;
     }
@@ -89,7 +103,7 @@ void roundabout_test(void)
 {   
 	read_adc();     // 读取四路电感ADC值 
 	
-	KP_a = 1;
+	KP_a = 0.5;
 	KD_a = 0;
 	KG_a = 0;
 	
@@ -133,7 +147,7 @@ void track_test(void)
 {
 	read_adc();     // 读取四路电感ADC值 
 	
-	fan_duty = 5500;       // 初始化负压电机占空比为60%占空比
+//	fan_duty = 5500;       // 初始化负压电机占空比为60%占空比
 	
 //	base_speed = 600; 
 //	KP_x = 0.04;
@@ -147,9 +161,9 @@ void track_test(void)
 //	KP_x = 0.7;
 //	KD_x = 9.65;
 
-//	base_speed = 200; 
-//	KP_x = 1.45;
-//	KD_x = 7.45;
+	base_speed = 100; 
+	KP_x = 1.45;
+	KD_x = 7.45;
 
 	
     // 检测电感值总和是否大于阈值（判断是否在赛道上）
@@ -199,14 +213,14 @@ static uint16 cnt = 0;
 
     cnt++;
 
-	if(cnt >= 200)               // 200 * 5ms = 1000ms
+	if(cnt >= 200)               // 200 * 2ms = 400ms
     {
         cnt = 0;
-		if(base_speed != 300){
-            base_speed = 300;
+		if(base_speed != 500){
+            base_speed = 500;
         }
         else{
-            base_speed =-300;
+            base_speed = 200;
         }
     }
 	target_speed_L = base_speed;
@@ -233,18 +247,18 @@ static uint16 cnt = 0;
 	read_adc();     // 读取四路电感ADC值 
 	
     cnt++;
-    if(cnt >= 80)               // 80 * 5ms = 400ms
+    if(cnt >= 100)               // 80 * 2ms = 400ms
     {
         cnt = 0;
-        if(base_speed != 600)
+        if(base_speed != 300)
         {
-            base_speed =600;
+            base_speed =300;
 //			KP_x = 1.6f;
 //			KD_x = 0.6f;
         }
         else
         {
-            base_speed = 300;
+            base_speed = 180;
 //			KP_x = 0.5f;
 //			KD_x = 0.6f;
         }
@@ -292,23 +306,37 @@ static uint16 cnt = 0;
 // 说明: 读取IMU陀螺仪数据并通过串口输出，用于传感器调试。
 void gyro_test(void)
 {
-	imu660rb_get_gyro();
-	
-	gyro_x = imu660rb_gyro_transition(imu660rb_gyro_x);
-	gyro_y = imu660rb_gyro_transition(imu660rb_gyro_y);
-	gyro_z = imu660rb_gyro_transition(imu660rb_gyro_z);
-	
-//	if( 
-//		PID_angle( 0 );
+//	imu660rb_get_gyro();
 //	
+//	gyro_x = imu660rb_gyro_transition(imu660rb_gyro_x);
+//	gyro_y = imu660rb_gyro_transition(imu660rb_gyro_y);
+//	gyro_z = imu660rb_gyro_transition(imu660rb_gyro_z);
 	
+	static int16 angle = 0;
+	KP_a=0.3;
+	KG_a =0.1 ;
+	base_speed=70;
 	
-	sprintf(uart,"%f,%f,%f,",gyro_x,gyro_y,gyro_z);
+	if( angle_x <= 0)
+	{
+		angle = 380;
+	}
+	if( angle_x >= 360)
+	{
+		angle = -20;	
+	}
+	 
+	PID_angle( angle );
+	
+	sprintf(uart,"%f,%d,%f\n",angle_x,angle,angle_err);
 	uart_write_buffer(UART_1,uart,strlen(uart));
-		
-	sprintf(uart,"%d,%d,%d\n",imu660rb_gyro_x,imu660rb_gyro_y,imu660rb_gyro_z);
- 	uart_write_buffer(UART_1,uart,strlen(uart));
 	
+	
+//	sprintf(uart,"%f,%f,%f,",gyro_x,gyro_y,gyro_z);
+//	uart_write_buffer(UART_1,uart,strlen(uart));
+//		
+//	sprintf(uart,"%d,%d,%d\n",imu660rb_gyro_x,imu660rb_gyro_y,imu660rb_gyro_z);
+// 	uart_write_buffer(UART_1,uart,strlen(uart));
 	
 }
 

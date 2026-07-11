@@ -13,4 +13,18 @@ void element_judge(void)
 {
 	L_roundabout_judge();
 	R_roundabout_judge();
+	crossroads_judge();
+	teeterboard_judge();
+}
+
+void crossroads_judge(void)
+{
+	
+	
+}
+
+void teeterboard_judge(void)
+{
+	
+	
 }

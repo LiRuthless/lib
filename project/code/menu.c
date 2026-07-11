@@ -292,3 +292,18 @@ void menu(void)
 	
 	write_menu();
 }
+
+
+void adc_menu(void)
+{
+	read_adc();
+	ips114_show_string(2,  1, "adc1");    ips114_show_int16(50, 0,  adc_filted[0]);
+    ips114_show_string(2, 16, "adc2");    ips114_show_int16(50, 16, adc_filted[1]);
+	ips114_show_string(2, 32, "adc3");    ips114_show_int16(50, 32, adc_filted[2]);
+    ips114_show_string(2, 48, "adc4");    ips114_show_int16(50, 48, adc_filted[3]); 
+	
+	ips114_show_int8(50, 16*4, key_flag); 
+	ips114_show_int8(50, 16*5, Start_flag); 
+	ips114_show_int8(50, 16*6, Run_flag); 
+	
+}
