@@ -9,6 +9,7 @@ extern float KP_x;      // 方向环比例系数
 extern float K2P_x;     // 方向环非线性二次比例系数
 extern float KI_x;      // 方向环积分系数
 extern float KD_x;      // 方向环微分系数
+extern float K2D_x;      // 方向环微分系数
 
 extern float KP_a;            // 角度环比例系数
 extern float KD_a;            // 角度环微分系数
@@ -20,7 +21,7 @@ extern float PID_outL;        // 左轮速度PID总输出
 extern float PID_outR;        // 右轮速度PID总输出
 
 #define MAX_DIR_OUT                 (1000)
-#define MAX_SPD_OUT                 (9000)
+#define MAX_SPD_OUT                 (7500)
 
 #define MOTOR_DEAD_ZONE_L           (500)
 #define MOTOR_DEAD_ZONE_R           (500)

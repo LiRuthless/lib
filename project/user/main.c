@@ -21,8 +21,8 @@ void main()
     tim3_irq_handler = pit_track;       // TIM3中断 -> 循迹控制处理
 //  tim4_irq_handler = pit_speed;       // TIM4中断 -> 速度环处理
 
-	KP_v  = 23.0;       				// 速度环比例系数			//15.0  0.85
-    KI_v  = 0.75;      					// 速度环积分系数			//3.46  0.39!!!!!!!
+	KP_v  = 21.0;       				// 速度环比例系数			//15.0  0.85
+    KI_v  = 0.74;      					// 速度环积分系数			//3.46  0.39!!!!!!!
 
     // 主循环
 	while(1)
@@ -109,6 +109,14 @@ void pit_track (void)
 	read_gyro_angle();
     motor_control(); 
 	
+	sprintf(uart,"%d,%d,",track_error,track_out);
+	uart_write_buffer(UART_1,uart,strlen(uart));
+	
+	sprintf(uart,"%d,%d,%f,",target_speed_L,real_speed_L,PID_outL);
+	uart_write_buffer(UART_1,uart,strlen(uart));
+		
+	sprintf(uart,"%d,%d,%f\n",target_speed_R,real_speed_R,PID_outR);
+ 	uart_write_buffer(UART_1,uart,strlen(uart));
 }                                                       
 
 

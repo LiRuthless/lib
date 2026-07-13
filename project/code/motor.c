@@ -19,7 +19,7 @@ int32 distance_L = 0;				// 左轮累计行驶距离
 int32 distance_R = 0;				// 右轮累计行驶距离
 int32 Distance = 0;					// 累计行驶距离（左右轮平均）
 
-float alpha = 0.9 ;              // 编码器速度低通滤波系数
+float alpha = 0.88 ;              // 编码器速度低通滤波系数
 
 LowPassFilter filt_encoder_L;   // 左轮编码器低通滤波器
 LowPassFilter filt_encoder_R;   // 右轮编码器低通滤波器
@@ -35,13 +35,13 @@ void speed_control(int16 pid_out)
 {
 	if( pid_out >= 0 )
 	{
-		target_speed_L = base_speed - 2 * pid_out;    // 左轮减速（内侧轮）
+		target_speed_L = base_speed - (3 * pid_out)/2;    // 左轮减速（内侧轮）
 		target_speed_R = base_speed + 1 * pid_out;    // 右轮加速（外侧轮）
 	}
 	else
 	{
 		target_speed_L = base_speed - 1 * pid_out;    // 左轮加速（外侧轮）
-		target_speed_R = base_speed + 2 * pid_out;    // 右轮减速（内侧轮）
+		target_speed_R = base_speed + (3 * pid_out)/2;    // 右轮减速（内侧轮）
 	}
 }
 

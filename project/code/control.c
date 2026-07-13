@@ -51,10 +51,11 @@ void whole_test(void)
 //	KP_x = 1.45;
 //	KD_x = 7.45;
 	
-	base_speed = 200; 
-	KP_x = 0.5;
-	K2P_x = 0.00;
-	KD_x = 10.0;
+	base_speed = 700; 
+	KP_x  = 7.6;
+	K2P_x = 0.007;
+	KD_x  = 6.45;
+	K2D_x = 0.9;
 	
 //	fan_duty = 6000;       // 初始化负压电机占空比为60%占空比
 	

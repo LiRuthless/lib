@@ -19,9 +19,10 @@ int16 track_error = 0; 				// 循迹偏差值（由get_track_error计算）
 int16 symmetry_x = 0;
 int16 symmetry_y = 0;
 
-int8 weight_x = 8;
-int8 weight_y = 30;
-int8 weight_abs = 10;
+int8 weight_x = 15;//15
+int8 weight_xx = 20;//20
+int8 weight_y = 28;//28
+int8 weight_abs = 5;//5
 
 uint16 adc_sum[4] = {0};        // 每路ADC累加和，用于平均滤波
 uint16 max[4] = {0};            // 每路ADC采样最大值，用于去极值
@@ -59,7 +60,7 @@ int16 get_track_error(void)
 //		weight_x = 38;
 //	}
 
-    denominator = weight_x * (adc_filted[0] + adc_filted[3]) + weight_abs * labs(adc_filted[1] - adc_filted[2]);
+    denominator = weight_xx * (adc_filted[0] + adc_filted[3]) + weight_abs * labs(adc_filted[1] - adc_filted[2]);
     
     if (denominator == 0)	return 0;  		// 避免除零：电感值全为0时返回0偏差
 	

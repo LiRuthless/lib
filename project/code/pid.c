@@ -11,6 +11,7 @@ float KP_x = 0.0f;              // 方向环比例系数
 float K2P_x = 0.0f;             // 方向环非线性二次比例系数
 float KI_x = 0.0f;              // 方向环积分系数（预留）
 float KD_x = 0.0f;              // 方向环微分系数
+float K2D_x = 0.0f;              // 方向环微分系数
 
 float KP_a = 0.0f;              // 角度环比例系数
 float KD_a = 0.0f;              // 角度环微分系数
@@ -39,6 +40,7 @@ int16 PID_track(void)
     float P_out = 0.0;       // P环节输出
     float P2_out = 0.0;      // P2环节输出（非线性项）
     float D_out = 0.0;       // D环节输出
+	float D2_out = 0.0; 
     
 	static int32 error_last = 0.0;   // 上次偏差
     
@@ -50,10 +52,11 @@ int16 PID_track(void)
     P_out  = KP_x  * (float) error;                       // 计算P环节输出
     P2_out = K2P_x * (float) error * abs(error);          // 计算非线性P2项
     D_out  = KD_x  * (float)(error - error_last);         // 计算D环节输出（微分项）
+	D2_out = K2D_x * accel_x;
     
     error_last = error;             // 更新上次偏差，供下次微分计算使用
     
-    PID_out = (P_out + P2_out/*I_out*/ + D_out);        // 汇总PID各环节输出
+    PID_out = (P_out + P2_out/*I_out*/ + D_out - D2_out);        // 汇总PID各环节输出
     
     if(PID_out >  MAX_DIR_OUT) PID_out =  MAX_DIR_OUT;      // 输出限幅上限
     if(PID_out < -MAX_DIR_OUT) PID_out = -MAX_DIR_OUT;      // 输出限幅下限
