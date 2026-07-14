@@ -11,8 +11,9 @@
 
 void element_judge(void);
 void crossroads_judge(void);
+void crossroads_out_judge(void);
 void teeterboard_judge(void);
-
+void teeterboard_out_judge(void);
 
 
 #endif

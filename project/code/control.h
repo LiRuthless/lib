@@ -10,7 +10,10 @@
 #define KERNEL_TRACKING		0
 #define KERNEL_ISLAND_L		1
 #define KERNEL_ISLAND_R		2
-
+#define KERNEL_TEETERBOARD	3
+#define KERNEL_CROSSROADS	4
+#define KERNEL_CASK			5
+#define KERNEL_REISLAND     6
 
 extern int16 track_out;     // 方向控制输出
 extern uint8 kernel_state;

@@ -3,80 +3,116 @@
 // 功能说明: 控制策略与测试函数模块
 // 包含速度环测试、循迹测试、ADC测试等控制策略实现。
 // ============================================================
-/*    	每日一拜 好过省赛             天天参拜 稳过国赛        */
-/* \\ \\ \\ \\ \\ \\ \\ || || || || || || // // // // // // // //
-\\ \\ \\ \\ \\ \\ \\        _ooOoo_          // // // // // // //
-\\ \\ \\ \\ \\ \\          o8888888o            // // // // // //
-\\ \\ \\ \\ \\             88" . "88               // // // // //
-\\ \\ \\ \\                (| -_- |)                  // // // //
-\\ \\ \\                   O\  =  /O                     // // //
-\\ \\                   ____/`---'\____                     // //
-\\                    .'  \\|     |//  `.                      //
-==                   /  \\|||  :  |||//  \                     ==
-==                  /  _||||| -:- |||||-  \                    ==
-==                  |   | \\\  -  /// |   |                    ==
-==                  | \_|  ''\---/''  |   |                    ==
-==                  \  .-\__  `-`  ___/-. /                    ==
-==                ___`. .'  /--.--\  `. . ___                  ==
-==              ."" '<  `.___\_<|>_/___.'  >'"".               ==
-==            | | :  `- \`.;`\ _ /`;.`/ - ` : | |              \\
-//            \  \ `-.   \_ __\ /__ _/   .-` /  /              \\
-//      ========`-.____`-.___\_____/___.-`____.-'========      \\
-//                           `=---='                           \\
-// //   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  \\ \\
-// // //      佛祖保佑      永无BUG      永不修改        \\ \\ \\
-// // // // // // || || || || || || || || || || \\ \\ \\ \\ \\ */
+
 #include "config.h"
 
 int16 track_out = 0;     // 方向控制输出（由循迹PID计算）
 uint8 kernel_state = KERNEL_TRACKING;
 
-
 void whole_test(void)
 {   
-	read_adc();     // 读取四路电感ADC值  
+	read_adc();     // 读取四路电感ADC值 
 	
-	KP_a = 0.5;
-	KD_a = 0;
-	KG_a = 0;
-	
-//	base_speed = 350; 
-//	KP_x = 1.0;
-//	KD_x = 16.65;
-	
-//	base_speed = 300; 
-//	KP_x = 0.7;
-//	KD_x = 9.65;
 
-//	KP_x = 1.45;
-//	KD_x = 7.45;
-	
-	base_speed = 700; 
-	KP_x  = 7.6;
-	K2P_x = 0.007;
-	KD_x  = 6.45;
-	K2D_x = 0.9;
-	
+
 //	fan_duty = 6000;       // 初始化负压电机占空比为60%占空比
 	
 	if( adc_filted[0] + adc_filted[1] + adc_filted[2] + adc_filted[3] > 300 )
     {
         Run_flag = 1;      // 标记已启动
 		
-//		element_judge();
-		
 		switch( kernel_state )
 		{
 			case KERNEL_TRACKING:
+				
+				weight_x = 15;//15
+				weight_xx = 20;//20
+				weight_y = 28;//28
+				weight_abs = 5;//5
+				
+				base_speed = 320; //500--2.9
+				KP_x  = 2;   //2
+				K2P_x = 0.008; //0.008
+				KD_x  = 15;	   //15	
+				K2D_x = 1;	   //1
+				
+				
 			
 				track_error = get_track_error();
 				track_out = PID_track();
 				speed_control(track_out);
 			
+//				element_judge();
+				crossroads_judge();
+				teeterboard_judge();
+				L_reroundabout_judge();
+				R_reroundabout_judge();
+			
+			break;
+			
+			case KERNEL_REISLAND:
+				
+				KP_a = 0.5;
+				KD_a = 0;
+				KG_a = 0;
+			
+			    PID_angle( 0 );	
+//				base_speed = 320; //500--2.9
+//				KP_x  = 2;   //2
+//				K2P_x = 0.008; //0.008
+//				KD_x  = 15;	   //15	
+//				K2D_x = 1;	   //1
+//			
+//				track_error = get_track_error();
+//				track_out = PID_track();
+//				
+//				if( track_out >  10)	track_out =  10;
+//				if( track_out < -10 )	track_out = -10;
+//			
+//				speed_control(track_out);
+			
+				L_roundabout_judge();
+				R_roundabout_judge();
+			
+			
+			break;
+				
+			case KERNEL_CROSSROADS:
+				
+				weight_x = 15;//15
+				weight_xx = 20;//20
+				weight_y = 28;//28
+				weight_abs = 5;//5
+				
+				base_speed = 250; //500--2.9
+				KP_x  = 2;   //2
+				K2P_x = 0.008; //0.008
+				KD_x  = 15;	   //15	
+				K2D_x = 1;	   //1
+			
+				track_error = get_track_error();
+				track_out = PID_track();
+				
+				if( track_out >  10)	track_out =  10;
+				if( track_out < -10 )	track_out = -10;
+			
+				speed_control(track_out);
+				
+				crossroads_out_judge();
+			
 			break;
 			
 			case KERNEL_ISLAND_L:
 				
+				weight_x = 15;//15
+				weight_xx = 20;//20
+				weight_y = 28;//28
+				weight_abs = 5;//5
+			
+				KP_a = 2;
+				KD_a = 1.2;
+				KG_a = 0;
+			
 				sign_round = -1;
 				roundabout();
 			
@@ -84,8 +120,33 @@ void whole_test(void)
 			
 			case KERNEL_ISLAND_R:
 				
+				weight_x = 15;//15
+				weight_xx = 20;//20
+				weight_y = 28;//28
+				weight_abs = 5;//5
+			
+				KP_a = 2;
+				KD_a = 1.2;
+				KG_a = 0;
+				
 				sign_round = 1;
 				roundabout();
+			
+			break;
+			
+			case KERNEL_TEETERBOARD:
+				
+				base_speed = 100; 
+				KP_x  = 4.5;
+				K2P_x = 0.0;
+				KD_x  = 6.2;
+				K2D_x = 0.9;
+			
+				track_error = get_track_error();
+				track_out = PID_track();
+				speed_control(track_out);
+			
+				teeterboard_out_judge();
 			
 			break;
 			

@@ -43,7 +43,7 @@ void read_accel_velocity(void)
 	accel_y = ((float)imu660rb_acc_y - accel_offset_y) / 14.3f;
 	accel_z = ((float)imu660rb_acc_z - accel_offset_z) / 14.3f;
 	
-	velocity_x += (gyro_x + accel_last_x) * 0.001f;		//0.5 * 0.002
+	velocity_x += (gyro_x * 0.002);//+ accel_last_x) * 0.001f;		//0.5 * 0.002
 	velocity_y += (gyro_y + accel_last_y) * 0.001f;
 	velocity_z += (gyro_z + accel_last_z) * 0.001f;
 	

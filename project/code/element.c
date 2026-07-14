@@ -7,7 +7,7 @@
 
 #include "config.h"
 
-
+int16 in_time = 0;
 
 void element_judge(void)
 {
@@ -17,14 +17,51 @@ void element_judge(void)
 	teeterboard_judge();
 }
 
-void crossroads_judge(void)
+void straight_judge(void)
 {
+	
 	
 	
 }
 
+void crossroads_judge(void)
+{
+	if( adc_filted[0] + adc_filted[1] + adc_filted[2] + adc_filted[3] > 3400 )
+	{
+		
+		kernel_state = KERNEL_CROSSROADS;
+
+	}
+}
+
+void crossroads_out_judge(void)
+{
+	if( adc_filted[0] + adc_filted[1] + adc_filted[2] + adc_filted[3] < 3400 )
+	{
+		kernel_state = KERNEL_TRACKING;
+
+	}
+}
+
 void teeterboard_judge(void)
 {
+	if( adc_filted[0] + adc_filted[1] + adc_filted[2] + adc_filted[3] < 800 )
+	{
+		kernel_state = KERNEL_TEETERBOARD;
+		in_time = time;
+	}
+}
+
+void teeterboard_out_judge(void)
+{
+	if( adc_filted[0] + adc_filted[1] + adc_filted[2] + adc_filted[3] > 1000 )
+	{
+		kernel_state = KERNEL_TRACKING;
+	}
 	
-	
+	if( (time - in_time) > 300 ) 
+	{
+		kernel_state = KERNEL_TRACKING;
+		
+	}
 }

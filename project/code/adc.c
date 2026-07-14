@@ -50,15 +50,6 @@ int16 get_track_error(void)
 	symmetry_x = (abs(diff_x) * 100) / (adc_filted[0] + adc_filted[3]);
 	symmetry_y = (abs(diff_y) * 100) / (adc_filted[1] + adc_filted[2]);
 	
-//	
-//	if( symmetry_x < 40 && (adc_filted[1] + adc_filted[2]) > 1000 )
-//	{
-//		weight_x = 5;
-//	}
-//	else
-//	{
-//		weight_x = 38;
-//	}
 
     denominator = weight_xx * (adc_filted[0] + adc_filted[3]) + weight_abs * labs(adc_filted[1] - adc_filted[2]);
     

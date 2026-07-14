@@ -12,6 +12,7 @@ uint8 dat[32];						// 串口数据接收缓冲区
 
 int16 battery = 0;					// 电池电压ADC原始值
 int16 battery_filt = 0;				// 电池电压滤波值
+int16 low_power_num = 0;
 
 int32 time = 0;
 
@@ -35,7 +36,7 @@ void All_init(void)
 	
 	adc_init(ADC_CH11_P03, ADC_12BIT);	// 初始化电池电压检测ADC，12位精度
 	gpio_init(IO_P10, GPO, 0, GPO_PUSH_PULL);	// 初始化蜂鸣器GPIO（P10），推挽输出
-	lowpass_init(&filt_battery, 0.2);	// 初始化电池电压低通滤波器
+	lowpass_init(&filt_battery, 0.65);	// 初始化电池电压低通滤波器
     
     ips114_init();          // 初始化IPS114显示屏
 	key_init();             // 初始化按键ADC
@@ -45,9 +46,6 @@ void All_init(void)
     motor_init();           // 初始化电机PWM
 	
 	imu660rb_init();					// 初始化IMU660RB六轴传感器
-	
-//    pit_ms_init(PIT_TR, 2);    // 初始化5ms定时中断（循迹控制）
-//    pit_ms_init(PIT_SP, 2);    // 初始化2ms定时中断（速度环）
 }
 
 
@@ -63,7 +61,7 @@ void key_start(void)
 	cur_key = gpio_get_level(IO_P22);
 
 	if(last_key && !cur_key){		 // 检测到下降沿
-		key_flag = !key_flag;
+		key_flag = 1;
 	}
 	
 	last_key = cur_key;
@@ -77,49 +75,44 @@ void key_start(void)
 //	sprintf(uart,"%d\n",battery_filt);
 // 	uart_write_buffer(UART_1,uart,strlen(uart));
 	
-
-	while( battery_filt < 1200 && battery_filt > 300 )		//max1308-12.6v  min1182-11.4  1192-11.5
+	if( battery_filt < 1220 && battery_filt > 300 )		//max1308-12.6v  min1182-11.4  1192-11.5
 	{
-		Start_flag = 0;
-		
-		P10 = 1;
-		system_delay_ms(100);
-		P10 = 0;
-		system_delay_ms(100);
-
-		battery = adc_convert(ADC_CH11_P03);
-		battery_filt = (int16)lowpass_update(&filt_battery, (float)battery);
-	}
-	
-//	if( Start_flag )
-//	{
-//		PID_outL = 0.0;				// 启动时清零左轮PID累计输出
-//		PID_outR = 0.0;				// 启动时清零右轮PID累计输出
-//	}
-}
-
-uint8 battery_voltage_get(void)
-{
-    static uint32 low_power_num = 0;
-	
-	battery = adc_convert(ADC_CH11_P03);
-	battery_filt = (int16)lowpass_update(&filt_battery, (float)battery);
-	
-    if(battery_filt < 1200 && battery_filt > 300)
-    {
         low_power_num++;
-        if((2000 ) < (low_power_num / 20))		// 2s都超过电压保护值，则进行停机保护
+        if( (low_power_num) > 200 )		// （不知道多久）都超过电压保护值，则进行停机保护
         {
-           return 1;   
+           	Start_flag = 0;
+			key_flag = 0;
         }
     }
     else
     {
         low_power_num = 0;
     }
-
-	return 0;
+	
 }
+
+//uint8 battery_voltage_get(void)
+//{
+//    static uint32 low_power_num = 0;
+//	
+//	battery = adc_convert(ADC_CH11_P03);
+//	battery_filt = (int16)lowpass_update(&filt_battery, (float)battery);
+//	
+//    if(battery_filt < 1200 && battery_filt > 300)
+//    {
+//        low_power_num++;
+//        if((2000 ) < (low_power_num / 20))		// 2s都超过电压保护值，则进行停机保护
+//        {
+//           return 1;   
+//        }
+//    }
+//    else
+//    {
+//        low_power_num = 0;
+//    }
+
+//	return 0;
+//}
 
 
 // 函数名: uart_adjust

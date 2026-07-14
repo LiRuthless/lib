@@ -31,7 +31,7 @@
 
 
 // ==================== 菜单状态变量 ====================
-uint8 page =  0;            // 当前页面编号
+uint8 page = PAGE_HOME  ;            // 当前页面编号
 uint8 arrow = 1;            // 当前光标位置（从1开始计数）
 static uint8 mode = 1;  	// 菜单模式（1=浏览模式，2=调参模式）
 uint16 key_adc1 = 0;		// 按键ADC通道1采样值
@@ -40,6 +40,13 @@ uint16 key_adc2 = 0;		// 按键ADC通道2采样值
 // 显示状态（用于减少不必要的刷新与闪烁）
 static uint16 last_displayed_page = 0xFFFF;
 static uint8  last_displayed_arrow = 0xFF;
+
+static uint16 last_key_adc1 = 0xFFFF;
+static uint16 last_key_adc2 = 0xFFFF;
+
+static LowPassFilter filt_key1;
+static LowPassFilter filt_key2;
+
 
 // ==================== 静态函数声明 ====================
 static void   menu_draw_content(void);
@@ -58,25 +65,51 @@ uint8 key_scan(void)
     key_adc2 = adc_mean_filter_convert(KEY_CHANNEL1, 3);
     key_adc1 = adc_mean_filter_convert(KEY_CHANNEL2, 3);
 
-    switch(key_adc1 / 100)
+    if(key_adc1 / 100>3&&key_adc1 / 100<9)
     {
-        case 5 : key_status = UP;      break;   // 约542
-        case 12: key_status = DOWN;    break;   // 约1262
-        case 18: key_status = OK;      break;   // 约1840
-        case 24: key_status = LEFT;    break;   // 约2467
-        case 30: key_status = RIGHT;   break;   // 约3082
-        default:                       break;
-    }
+		key_status = UP; // 约542
+	}
+	else if(key_adc1 / 100>9&&key_adc1 / 100<15)
+	{
+		key_status = DOWN; // 约1262  
+	}
+	else if(key_adc1 / 100>15&&key_adc1 / 100<20)
+	{
+		key_status = OK; // 约1840
+	}
+	else if(key_adc1 / 100>20&&key_adc1 / 100<25)
+	{ 
+		key_status = LEFT;  // 约2467
+	}
+	else if(key_adc1 / 100>25&&key_adc1 / 100<31)
+	{ 
+		key_status = RIGHT; // 约3082
+	}
 
-    switch(key_adc2 / 100)
-    {
-        case 5 : key_status = RST;     break;   // 约542
-        case 12: key_status = ADJUST1; break;   // 约1262  一键加载平稳模式
-        case 18: key_status = ADJUST2; break;   // 约1840  一键加载快速模式
-        case 24: key_status = FOUR;    break;   // 约2467  
-        case 30: key_status = BACK;    break;   // 约3082
-        default:                       break;
-    }
+
+    if(key_adc2 / 100>3 && key_adc2 / 100 <9)
+	{
+      key_status = RST;  // 约542
+	}	
+	else if(key_adc2 / 100>9 && key_adc2 / 100<15)
+	{
+         key_status = ADJUST1;  // 约1262  一键加载平稳模式
+	}
+	else if(key_adc2 / 100>15 && key_adc2 / 100<20)
+	{
+        key_status = ADJUST2;  // 约1840  一键加载快速模式
+	}
+	else if(key_adc2 / 100>20 && key_adc2 / 100<25)
+	{
+        key_status = FOUR;   // 约2467  
+	}
+	else if(key_adc2 / 100>25 && key_adc2 / 100<31)
+	{
+        key_status = BACK;  // 约3082
+	}
+
+	 key_adc1 = (uint16)lowpass_update(&filt_key1, (float)key_adc1);
+     key_adc2 = (uint16)lowpass_update(&filt_key2, (float)key_adc2);
     return key_status;
 }
 
@@ -88,6 +121,8 @@ void key_init(void)
 	adc_init(KEY_CHANNEL1, ADC_12BIT);		// 初始化按键ADC通道1
 	adc_init(KEY_CHANNEL2, ADC_12BIT);		// 初始化按键ADC通道2
 	gpio_init(IO_P22, GPIO, 1, GPIO_NO_PULL);	// 初始化启动按键GPIO（P22），无上拉输入
+	lowpass_init(&filt_key1, 0.7f);
+    lowpass_init(&filt_key2, 0.7f);
 }
 
 
@@ -100,44 +135,63 @@ void key_action(uint8 key)
     switch(key)
     {
     case UP:
-        if(page == 0)
+        if(page == PAGE_HOME)
             arrow = (arrow == 1) ? 4 : arrow - 1;
-        else if(page == 21 || page == 22)
-            arrow = (arrow == 1) ? 3 : arrow - 1;
-        else if(page == 1||page == 2)
+        else if(page == PAGE_ADC_ERR || page == PAGE_SPD_DIS|| page == PAGE_GYRO )
+            arrow = (arrow == 1) ? 4 : arrow - 1;
+        else if(page == PAGE_ADJUST1||page == PAGE_ADJUST2)
             arrow = (arrow == 1) ? 5 : arrow - 1;
         else
             arrow = (arrow == 1) ? 4 : arrow - 1;
         break;
     case DOWN:
-        if(page == 0)
+        if(page == PAGE_HOME)
             arrow = (arrow == 4) ? 1 : arrow + 1;
-        else if(page == 21 || page == 22)
-            arrow = (arrow == 3) ? 1 : arrow + 1;
-        else if(page == 1||page == 2)
+        else if(page == PAGE_ADC_ERR || page == PAGE_SPD_DIS|| page == PAGE_GYRO)
+            arrow = (arrow == 4) ? 1 : arrow + 1;
+        else if(page == PAGE_ADJUST1||page == PAGE_ADJUST2)
             arrow = (arrow == 5) ? 1 : arrow + 1;
         else
             arrow = (arrow == 4) ? 1 : arrow + 1;
         break;
 
     case OK:
-		if(page == 0)
+		if(page == PAGE_HOME)
 			{
                 page =  20+arrow;
 				arrow = 1; 
 				break;
 			}
+			
+			
 
     case BACK:
-         if(page == 21||page == 22||page == 23||page==1||page==2)
+         if(page == PAGE_ADC_ERR || page == PAGE_SPD_DIS|| page == PAGE_GYRO||page==PAGE_ADJUST1||page==PAGE_ADJUST2)
 			{
-                page = 0;
+                page = PAGE_HOME;
 				arrow = 1; 
 				break;
 			}
 			
+			if( page==PAGE_ADJUST1)
+			{
+				write_speed_low();
+				page = PAGE_HOME;
+				arrow = 1; 
+				mode=1;
+				break;
+			}
+			if( page==PAGE_ADJUST2)
+			{
+				write_speed_high();
+                page = PAGE_HOME;
+				arrow = 1; 
+				mode=1;
+				break;
+			}
+			
 	 case LEFT:
-		 if(page==1||page==2||mode==2)
+		 if((page==PAGE_ADJUST1||page==PAGE_ADJUST2)&&mode==2)
 		 {
 			 if(arrow==1)	KP_x-=0.001;
 			 if(arrow==2)	K2P_x-=0.001;
@@ -148,7 +202,7 @@ void key_action(uint8 key)
           break;
 
 	 case RIGHT:
-		 if(page==1||page==2||mode==2)
+		 if((page==PAGE_ADJUST1||page==PAGE_ADJUST2)&&mode==2)
 		 {
 			 if(arrow==1)	KP_x+=0.001;
 			 if(arrow==2)	K2P_x+=0.001;
@@ -160,19 +214,21 @@ void key_action(uint8 key)
              break;
 	case ADJUST1:
 		{
-			page =1;
+			page =PAGE_ADJUST1;
+			read_speed_low();
 			mode=2;
 			break;
 		}
 
 	case ADJUST2:
 		{
-			page =2;	
+			page =PAGE_ADJUST2;	
+			read_speed_high();
 			mode=2;
 			break;
 		}
-    }
-}
+	
+}}
 
 // ==================== 显示绘制函数 ====================
 
@@ -181,6 +237,19 @@ static void menu_draw_content(void)
 {
     switch(page)
     {
+//	case PAGE_EXTRA:
+//		ips114_show_string(2, 0,  "adc1 ");    ips114_show_int16(100, 0,  adc_filted[0]);
+//        ips114_show_string(2, 16, "adc1 ");    ips114_show_int16(100, 16, adc_filted[1]);
+//	    ips114_show_string(2, 32, "adc3 ");    ips114_show_int16(100, 32, adc_filted[2]);
+//        ips114_show_string(2, 48, "adc4 ");    ips114_show_int16(100, 48, adc_filted[3]);
+//	    ips114_show_string(2, 64, "diff ");    ips114_show_int16(100, 64, diff_g);
+//	    ips114_show_string(2, 80, "W_X ");    ips114_show_int16(100, 80, weight_x);
+//		ips114_show_string(2, 96, "W_y ");    ips114_show_int16(100, 96, weight_y);	
+//	    ips114_show_string(2, 112, "gyro_x");   ips114_show_float(100, 112, gyro_x,2,2);
+//       // ips114_show_string(2, 80, "gyro_y");   ips114_show_float(100, 128, gyro_y,2,2);
+//        ips114_show_string(2, 128, "gyro_z");   ips114_show_float(100, 128, gyro_z,2,2);
+//		
+		
     case PAGE_HOME:
         ips114_show_string(2, 16 * 0, "ADC_ERR");
         ips114_show_string(2, 16 * 1, "SPD_DIS");
@@ -188,13 +257,13 @@ static void menu_draw_content(void)
         break;
 
     case PAGE_ADC_ERR :
-        ips114_show_string(2, 0,  "adc1 ");    ips114_show_int16(100, 0,  adc_filted[0]);
+		ips114_show_string(2, 0,  "adc1 ");    ips114_show_int16(100, 0,  adc_filted[0]);
         ips114_show_string(2, 16, "adc1 ");    ips114_show_int16(100, 16, adc_filted[1]);
 	    ips114_show_string(2, 32, "adc3 ");    ips114_show_int16(100, 32, adc_filted[2]);
-        ips114_show_string(2, 48, "adc4 ");    ips114_show_int16(100, 48, adc_filted[3]);  
-//	    ips114_show_string(2, 32, "adc3 ");    ips114_show_int16(100, 32, key_adc1);
+        ips114_show_string(2, 48, "adc4 ");    ips114_show_int16(100, 48, adc_filted[3]); 
+// 	    ips114_show_string(2, 32, "adc3 ");    ips114_show_int16(100, 32, key_adc1);
 //        ips114_show_string(2, 48, "adc4 ");    ips114_show_int16(100, 48, key_adc2);
-        break;
+         break;
 
     case PAGE_SPD_DIS:
         ips114_show_string(2, 0,  "speed_L");  ips114_show_int16(100, 0,  real_speed_L);
@@ -222,7 +291,7 @@ static void menu_draw_content(void)
 	    ips114_show_string(2, 32, "KD_x");         ips114_show_float(100, 32, KD_x,2,3);
 	    ips114_show_string(2, 48, "base_speed");   ips114_show_int16(100, 48, base_speed);
 	    ips114_show_string(2, 64, "fan_duty");     ips114_show_int16(100, 64, fan_duty);
-		write_speed_high();
+	
 	    break; 
     }
 }
@@ -248,18 +317,20 @@ static void menu_draw_cursor(void)
 // 应在主循环中周期性调用，完成按键响应和屏幕刷新
 void menu(void)
 {
-    static uint8 last_key = 0;  // 上一次按键值，用于边沿检测消抖
-    uint8 key = key_scan();
+	static uint8 last_key = 0;
 	
-//	read_menu();
+    static uint8 last_written_page = 0xFF;   // 新增
+    static uint8 last_written_arrow = 0xFF;  // 新增
+   
+    uint8 key = key_scan();//读取
 
-    // 按键释放时清零记录
+    // 无键清零
     if(key == 0)
     {
         last_key = 0;
     }
 
-    // RST键处理：仅清屏刷新，保持当前页面和光标状态
+    // RST键处理：清屏重绘
     if(key == RST && key != last_key)
     {
         ips114_clear(RGB565_WHITE);
@@ -272,7 +343,7 @@ void menu(void)
     // 按键按下沿检测：有按键且与上次不同
     if(key != last_key && key != 0)
     {
-		key_action(key);
+		key_action(key);//读取
         last_key = key;
     }
 
@@ -284,29 +355,21 @@ void menu(void)
         last_displayed_arrow = 0xFF;    // 强制重绘光标
     }
 
+	if(key_adc1 != last_key_adc1 || key_adc2 != last_key_adc2)
+    {
+     
+    ips114_show_int16(180, 96,  key_adc1);
+    ips114_show_int16(180, 112, key_adc2);
+     
+
+    last_key_adc1 = key_adc1;
+    last_key_adc2 = key_adc2;
+   }
+	
+	
     // 绘制页面内容
     menu_draw_content();
 
     // 绘制光标指示器
     menu_draw_cursor();
-	
-	write_menu();
-}
-
-
-void adc_menu(void)
-{
-	read_adc();
-	ips114_show_string(2,  1, "adc1");    ips114_show_int16(50, 0,  adc_filted[0]);
-    ips114_show_string(2, 16, "adc2");    ips114_show_int16(50, 16, adc_filted[1]);
-	ips114_show_string(2, 32, "adc3");    ips114_show_int16(50, 32, adc_filted[2]);
-    ips114_show_string(2, 48, "adc4");    ips114_show_int16(50, 48, adc_filted[3]); 
-	
-	track_error = get_track_error();
-	ips114_show_int16(50, 48, track_error); 
-	
-//	ips114_show_int8(50, 16*4, key_flag); 
-//	ips114_show_int8(50, 16*5, Start_flag); 
-//	ips114_show_int8(50, 16*6, Run_flag); 
-	
 }

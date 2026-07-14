@@ -14,6 +14,7 @@ extern int16 symmetry_x;
 extern int16 symmetry_y;
 
 extern int8 weight_x;
+extern int8 weight_xx;
 extern int8 weight_y;
 extern int8 weight_abs;
 
