@@ -18,8 +18,8 @@
 
 extern int16 track_out;     // 方向控制输出
 extern uint8 kernel_state;
-extern uint8 stop_flag;
-extern uint8 Round_flag;
+extern uint8 cask_flag;
+
 
 void whole_test(void);
 void roundabout_test(void); // 环岛状态机测试与控制（基于角度环）

@@ -14,7 +14,7 @@ uint8 R_round_flag = 0;                    // 环岛进出岛判断标志（1表
 
 int8 sign_round = 1;
 
-uint16 enter_distance1 = 4000;           // 环岛1入环前直行距离
+uint16 enter_distance1 = 8000;           // 环岛1入环前直行距离
 uint16 out_distance1 = 10000;             // 环岛1出环后直行距离
 
 int16 enter_angle1 = 30 ;                // 环岛1入环初始打角角度
@@ -160,20 +160,24 @@ void L_reroundabout_judge(void)
 	{
 		if( adc_filted[0] > adc_filted[3])
 		{
-//			 L_round_flag = 1;
+			 L_round_flag = 1;
 		}
 		else 
 		{
 			 R_round_flag = 1;
 		}
 		
-		Round_flag++;
-		
+		cask_flag = 0;
 		angle_x = 0;
 		Distance = 0;
 		distance_L = 0;
 		distance_R = 0;
 		kernel_state = KERNEL_REISLAND ;
+	}
+	
+	if( dl1b_distance_mm < 100 )
+	{
+		cask_flag = 1;
 	}
 	
 	
@@ -206,7 +210,7 @@ void R_reroundabout_judge(void)
 //		track_out = 0;
 //		angle_x = 0;
 //	}
-	if((adc_filted[0] + adc_filted[3] > 2800 ))
+	if(( adc_filted[0] + adc_filted[1] + adc_filted[2] + adc_filted[3] > 4500 )||(adc_filted[0] + adc_filted[3] >3000 ))
 	{
 		angle_x = 0;
 		kernel_state = KERNEL_REISLAND ;
@@ -219,7 +223,7 @@ void reroundabout_out_judge(void)
 {
 //	if(adc_filted[0] > 1200 && adc_filted[3] > 1000 && adc_filted[1] > 300 && adc_filted[1] < 1000 &&adc_filted[2] < 200 )
 //	if(adc_filted[0]  + adc_filted[3]> 2200 && track_error > 24  )
-	if( Distance > 8000 && adc_filted[0] + adc_filted[3] < 2800 )
+	if( Distance > 5000 )
 	{
 		kernel_state = KERNEL_TRACKING;
 		L_round_flag = 0;
@@ -240,7 +244,7 @@ void reroundabout_out_judge(void)
 void L_roundabout_judge(void)
 {
 //	if((adc_filted[0] > 1500 && adc_filted[3] > 2500) && angle_y < 5 && round_flag == 0)
-//	if((adc_filted[1] + adc_filted[2] < 300) && L_round_flag == 1 && Round_flag == 1)
+//	if((adc_filted[1] + adc_filted[2] < 250) && L_round_flag == 1 && !cask_flag)
 //	{
 //		roundabout_state = ISLAND_LPREENTER;
 //		kernel_state = KERNEL_ISLAND_L;
@@ -248,7 +252,6 @@ void L_roundabout_judge(void)
 //		track_out = 0;
 //		angle_x = 0;
 //		distance_L = distance_R = Distance = 0;
-//		stop_flag++;
 //	}
 }		
 
@@ -256,15 +259,14 @@ void L_roundabout_judge(void)
 void R_roundabout_judge(void)
 {
 //	if((adc_filted[3] > 1500 && adc_filted[0] > 2500) && angle_y < 5 && round_flag == 0)
-	if((adc_filted[1] + adc_filted[2] < 300) && R_round_flag == 1 && Round_flag == 2)
+	if((adc_filted[1] + adc_filted[2] < 300) && R_round_flag == 1 && !cask_flag)
 	{
 		roundabout_state = ISLAND_LPREENTER;
 		kernel_state = KERNEL_ISLAND_R;
 		
 		track_out = 0;
 		angle_x = 0;
-		distance_L = distance_R = Distance = 0;	
-		stop_flag++;
+		distance_L = distance_R = Distance = 0;		
 	}
 }	
 

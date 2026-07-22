@@ -39,35 +39,33 @@ void main()
 		{
 			
 			
-//			sprintf(uart,"%d,%d,%d,%d,",adc_filted[0],adc_filted[1] ,adc_filted[2],adc_filted[3]);
-//			uart_write_buffer(UART_1,uart,strlen(uart));
-//	
+////			sprintf(uart,"%d,%d,%d,%d,",adc_filted[0],adc_filted[1] ,adc_filted[2],adc_filted[3]);
+////			uart_write_buffer(UART_1,uart,strlen(uart));
+////	
 //			sprintf(uart,"%d,%d,",adc_filted[0]+adc_filted[3], adc_filted[0]+adc_filted[1] +adc_filted[2]+adc_filted[3]);
 //			uart_write_buffer(UART_1,uart,strlen(uart));
 //			
-//			sprintf(uart,"%d,%d,",track_error,track_out);
-//			uart_write_buffer(UART_1,uart,strlen(uart));
-//			
-////			sprintf(uart,"%f,%f,",angle_err ,angle_out);
+////			sprintf(uart,"%d,%d,",track_error,track_out);
 ////			uart_write_buffer(UART_1,uart,strlen(uart));
-//				sprintf(uart,"%d,%d,%f,",target_speed_L,real_speed_L,PID_outL);
-//				uart_write_buffer(UART_1,uart,strlen(uart));
-//		
-//				sprintf(uart,"%d,%d,%f,",target_speed_R,real_speed_R,PID_outR);
-//				uart_write_buffer(UART_1,uart,strlen(uart));
-			
+////			
+//////			sprintf(uart,"%f,%f,",angle_err ,angle_out);
+//////			uart_write_buffer(UART_1,uart,strlen(uart));
+////				sprintf(uart,"%d,%d,%f,",target_speed_L,real_speed_L,PID_outL);
+////				uart_write_buffer(UART_1,uart,strlen(uart));
+////		
+////				sprintf(uart,"%d,%d,%f,",target_speed_R,real_speed_R,PID_outR);
+////				uart_write_buffer(UART_1,uart,strlen(uart));
+//			
 //			sprintf(uart,"%d,",Distance);
 //			uart_write_buffer(UART_1,uart,strlen(uart));
-//////			
+////			
 ////	
 //			sprintf(uart,"%f,%f,%f,%f,",gyro_x, gyro_y, angle_x ,angle_y);
 //			uart_write_buffer(UART_1,uart,strlen(uart));
 //			sprintf(uart,"%d,%d\n",kernel_state ,roundabout_state);
 //			uart_write_buffer(UART_1,uart,strlen(uart));
-		
+////			
 			
-//			sprintf(uart,"%d,%d,%d,%d\n",kernel_state ,roundabout_state,Round_flag,R_round_flag);
-//			uart_write_buffer(UART_1,uart,strlen(uart));
 		}
 		else
 		{
@@ -98,9 +96,13 @@ void pit_track (void)
 	time++;
 	
 	read_gyro_angle();
-//	sprintf(uart,"%f,%f,%f,%f\n",gyro_x, gyro_y, angle_x ,angle_y);
+	dl1b_get_distance();
+	
+//	sprintf(uart,"%d\n",dl1b_distance_mm);
 //	uart_write_buffer(UART_1,uart,strlen(uart));
 	
+//	sprintf(uart,"%f,%f,%f,%f\n",gyro_x, gyro_y, angle_x ,angle_y);
+//	uart_write_buffer(UART_1,uart,strlen(uart));
 	
 	if( Start_flag )
 	{

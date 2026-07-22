@@ -29,7 +29,7 @@ extern int16 enter_angle1;						// 环岛1入环初始打角角度
 extern int16 enter_angle2;
 //extern int16 pre_out_angle1; 					// 环岛1预出环判断角度阈值
 extern int16 out_angle1;	 					// 环岛1出环目标角度
-extern uint8 R_round_flag ;
+
 
 void roundabout(void);
 

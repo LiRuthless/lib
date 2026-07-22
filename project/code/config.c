@@ -45,6 +45,8 @@ void All_init(void)
     encoder_init();         // 初始化编码器
     motor_init();           // 初始化电机PWM
 	
+	dl1b_init();
+	
 	imu660rb_init();					// 初始化IMU660RB六轴传感器
 	gyro_hpf_init(&gyro_hpf_x, 0.2f, 0.002f);
 	gyro_hpf_init(&gyro_hpf_y, 0.2f, 0.002f);

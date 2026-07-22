@@ -8,8 +8,7 @@
 
 int16 track_out = 0;     // 方向控制输出（由循迹PID计算）
 uint8 kernel_state = KERNEL_TRACKING;
-uint8 stop_flag = 0;
-uint8 Round_flag = 0;
+uint8 cask_flag = 0;
 
 void whole_test(void)
 {   
@@ -17,11 +16,11 @@ void whole_test(void)
 
 //	fan_duty = 6000;       // 初始化负压电机占空比为60%占空比
 	
-	if(( adc_filted[0] + adc_filted[1] + adc_filted[2] + adc_filted[3] > 300 ) && stop_flag < 3 )
+	if( adc_filted[0] + adc_filted[1] + adc_filted[2] + adc_filted[3] > 300 )
     {
         Run_flag = 1;      // 标记已启动
 		
-//		sprintf(uart,"%d,%d,%d,%d\n",kernel_state ,roundabout_state,Round_flag,R_round_flag);
+//		sprintf(uart,"%d,%d\n",kernel_state ,roundabout_state);
 //		uart_write_buffer(UART_1,uart,strlen(uart));
 		
 		switch( kernel_state )
@@ -46,7 +45,7 @@ void whole_test(void)
 				crossroads_judge();
 //				teeterboard_judge();
  				L_reroundabout_judge();
-//				R_reroundabout_judge();
+				//R_reroundabout_judge();
 //				L_roundabout_judge();
 //				R_roundabout_judge();
 			//	cask_judge();
@@ -98,7 +97,7 @@ void whole_test(void)
 				weight_y   = 2;		//28
 				weight_abs = 10;	//5
 				
-				base_speed = 150; 	//500--2.9
+				base_speed = 240; 	//500--2.9
 				KP_x  = 2;   		//2
 				K2P_x = 0.008;		//0.008
 				KD_x  = 15;			//15	
@@ -169,7 +168,7 @@ void whole_test(void)
 			case KERNEL_CASK:
 				weight_x   = 15;	//15
 				weight_xx  = 20;	//20
-				weight_y   = 2;		//28
+				weight_y   = 2;	//28
 				weight_abs = 5;		//5
 			
 				base_speed = 210; 	//500--2.9
