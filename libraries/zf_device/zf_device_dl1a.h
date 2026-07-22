@@ -59,8 +59,8 @@
 #if (DL1A_USE_INTERFACE==SOFT_IIC)                                                           // 这两段 颜色正常的才是正确的 颜色灰的就是没有用的
 //====================================================软件 IIC 驱动====================================================
 	#define DL1A_SOFT_IIC_DELAY         ( 1 )                                      // 软件 IIC 的时钟延时周期 数值越小 IIC 通信速率越快
-	#define DL1A_SCL_PIN                ( IO_P16 )                                      // 软件 IIC SCL 引脚 连接 DL1A 的 SCL 引脚
-	#define DL1A_SDA_PIN                ( IO_P14 )                                      // 软件 IIC SDA 引脚 连接 DL1A 的 SDA 引脚
+	#define DL1A_SCL_PIN                ( IO_P10 )                                      // 软件 IIC SCL 引脚 连接 DL1A 的 SCL 引脚
+	#define DL1A_SDA_PIN                ( IO_P42 )                                      // 软件 IIC SDA 引脚 连接 DL1A 的 SDA 引脚
 //====================================================软件 IIC 驱动====================================================
 #elif (DL1A_USE_INTERFACE==HARDWARE_IIC)
 //====================================================硬件 IIC 驱动====================================================
@@ -70,7 +70,7 @@
 	#define DL1A_SDA_PIN                ( 暂不支持       )                              // 硬件 IIC SDA 引脚 连接 DL1A 的 SDA 引脚
 //====================================================硬件 IIC 驱动====================================================
 #endif
-#define DL1A_XS_ENABLE              ( 1  )
+#define DL1A_XS_ENABLE              ( 0 )
 #if DL1A_XS_ENABLE
 #define DL1A_XS_PIN                 ( IO_P47 )
 #endif

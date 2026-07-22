@@ -152,12 +152,12 @@ void dl1b_int_handler (void)
 uint8 dl1b_init (void)
 {
     uint8   return_state    = 0;
-    uint8   data_buffer[2 + sizeof(dl1b_config_file)];
+    uint8   data_buffer[2 + sizeof(dl1b_default_configuration)];
     uint16  time_out_count  = 0;
     
-#if DL1B_USE_SOFT_IIC
+#if (DL1B_USE_INTERFACE==SOFT_IIC)
     soft_iic_init(&dl1b_iic_struct, DL1B_DEV_ADDR, DL1B_SOFT_IIC_DELAY, DL1B_SCL_PIN, DL1B_SDA_PIN);
-#else
+#elif (DL1B_USE_INTERFACE==HARDWARE_IIC)
     iic_init(DL1B_IIC, DL1B_DEV_ADDR, DL1B_IIC_SPEED, DL1B_SCL_PIN, DL1B_SDA_PIN);
 #endif
     
@@ -189,8 +189,8 @@ uint8 dl1b_init (void)
         data_buffer[0] = DL1B_I2C_SLAVE__DEVICE_ADDRESS >> 8;
         data_buffer[1] = DL1B_I2C_SLAVE__DEVICE_ADDRESS & 0xFF;
         
-        memcpy(&data_buffer[2], (uint8 *)dl1b_config_file, sizeof(dl1b_config_file));
-        dl1b_transfer_8bit_array(data_buffer, 2 + sizeof(dl1b_config_file), data_buffer, 0);
+        memcpy(&data_buffer[2], (uint8 *)dl1b_default_configuration, sizeof(dl1b_default_configuration));
+        dl1b_transfer_8bit_array(data_buffer, 2 + sizeof(dl1b_default_configuration), data_buffer, 0);
         
         while(1)
         {
