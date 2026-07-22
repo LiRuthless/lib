@@ -46,6 +46,8 @@ void All_init(void)
     motor_init();           // 初始化电机PWM
 	
 	imu660rb_init();					// 初始化IMU660RB六轴传感器
+	gyro_hpf_init(&gyro_hpf_x, 0.2f, 0.002f);
+	gyro_hpf_init(&gyro_hpf_y, 0.2f, 0.002f);
 }
 
 
@@ -58,7 +60,7 @@ void key_start(void)
 	static uint8 last_key = 1; 		 // 上一次按键电平
 	uint8 cur_key = 1;
 	
-	cur_key = gpio_get_level(IO_P22);
+	cur_key = gpio_get_level(IO_P23);
 
 	if(last_key && !cur_key){		 // 检测到下降沿
 		key_flag = 1;

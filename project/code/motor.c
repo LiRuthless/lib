@@ -134,8 +134,8 @@ void motor_init(void)
     pwm_init(MOTOR_PWM_R, 17000, 0);                        // 右轮PWM初始化：17KHz、占空比0
 	
 //	pwm_init(MOTOR_PWM_M, 17000, 0);                        // 负压电机PWM初始化：17KHz、占空比0
-	gpio_init(MOTOR_PWM_M, GPO, GPIO_LOW, GPO_PUSH_PULL);
-//	pwm_init(MOTOR_PWM_M, 100, 0);                          // 负压电机PWM初始化：17KHz、占空比0
+//	gpio_init(MOTOR_PWM_M, GPO, GPIO_LOW, GPO_PUSH_PULL);
+	pwm_init(MOTOR_PWM_M, 100, 0);                          // 负压电机PWM初始化：17KHz、占空比0
 	
 }
 

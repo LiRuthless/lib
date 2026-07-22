@@ -26,7 +26,7 @@ void straight_judge(void)
 
 void crossroads_judge(void)
 {
-	if( adc_filted[0] + adc_filted[1] + adc_filted[2] + adc_filted[3] > 3400 )
+	if( adc_filted[1] + adc_filted[2] > 2800 && symmetry_y < 25)
 	{
 		
 		kernel_state = KERNEL_CROSSROADS;
@@ -36,7 +36,7 @@ void crossroads_judge(void)
 
 void crossroads_out_judge(void)
 {
-	if( adc_filted[0] + adc_filted[1] + adc_filted[2] + adc_filted[3] < 3400 )
+	if( adc_filted[1] + adc_filted[2] < 2800 )
 	{
 		kernel_state = KERNEL_TRACKING;
 
@@ -63,5 +63,19 @@ void teeterboard_out_judge(void)
 	{
 		kernel_state = KERNEL_TRACKING;
 		
+	}
+}
+void cask_judge(void)
+{
+	if(angle_y > 60)
+	{
+		kernel_state = KERNEL_CASK;	
+	}
+}
+void cask_out_judge(void)
+{
+	if(angle_y < 20)
+	{
+		kernel_state = KERNEL_TRACKING;	
 	}
 }

@@ -8,12 +8,15 @@
 #ifndef _ELEMENT_H_
 #define _ELEMENT_H_
 
+extern int16 in_time;
+
 
 void element_judge(void);
 void crossroads_judge(void);
 void crossroads_out_judge(void);
 void teeterboard_judge(void);
 void teeterboard_out_judge(void);
-
+void cask_judge(void);
+void cask_out_judge(void);
 
 #endif

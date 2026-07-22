@@ -8,87 +8,101 @@
 
 int16 track_out = 0;     // 方向控制输出（由循迹PID计算）
 uint8 kernel_state = KERNEL_TRACKING;
+uint8 stop_flag = 0;
+uint8 Round_flag = 0;
 
 void whole_test(void)
 {   
 	read_adc();     // 读取四路电感ADC值 
-	
-
 
 //	fan_duty = 6000;       // 初始化负压电机占空比为60%占空比
 	
-	if( adc_filted[0] + adc_filted[1] + adc_filted[2] + adc_filted[3] > 300 )
+	if(( adc_filted[0] + adc_filted[1] + adc_filted[2] + adc_filted[3] > 300 ) && stop_flag < 3 )
     {
         Run_flag = 1;      // 标记已启动
+		
+//		sprintf(uart,"%d,%d,%d,%d\n",kernel_state ,roundabout_state,Round_flag,R_round_flag);
+//		uart_write_buffer(UART_1,uart,strlen(uart));
 		
 		switch( kernel_state )
 		{
 			case KERNEL_TRACKING:
 				
-				weight_x = 15;//15
-				weight_xx = 20;//20
-				weight_y = 28;//28
-				weight_abs = 5;//5
+				weight_x   = 15;	//15
+				weight_xx  = 20;	//20
+				weight_y   = 22;	//28
+				weight_abs = 10;	//5
 				
-				base_speed = 320; //500--2.9
-				KP_x  = 2;   //2
-				K2P_x = 0.008; //0.008
-				KD_x  = 15;	   //15	
-				K2D_x = 1;	   //1
-				
-				
+				base_speed = 245; 	//500--2.9
+				KP_x  = 2;   		//2
+				K2P_x = 0.008; 		//0.008
+				KD_x  = 15;	  		//15	
+				K2D_x = 1;	  		//1
 			
 				track_error = get_track_error();
-				track_out = PID_track();
+				track_out = PID_track(); 
 				speed_control(track_out);
 			
-//				element_judge();
 				crossroads_judge();
-				teeterboard_judge();
-				L_reroundabout_judge();
-				R_reroundabout_judge();
+//				teeterboard_judge();
+ 				L_reroundabout_judge();
+//				R_reroundabout_judge();
+//				L_roundabout_judge();
+//				R_roundabout_judge();
+			//	cask_judge();
+
 			
 			break;
 			
 			case KERNEL_REISLAND:
-				
-				KP_a = 0.5;
-				KD_a = 0;
-				KG_a = 0;
+
+//				KP_a = 2;
+//				KD_a = 1.2;
+//				KG_a = 0;
 			
-			    PID_angle( 0 );	
-//				base_speed = 320; //500--2.9
-//				KP_x  = 2;   //2
-//				K2P_x = 0.008; //0.008
-//				KD_x  = 15;	   //15	
-//				K2D_x = 1;	   //1
-//			
-//				track_error = get_track_error();
-//				track_out = PID_track();
-//				
+//				target_speed_L = base_speed;
+//				target_speed_R = base_speed;
+				
+				weight_x   = 20;	//15
+				weight_xx  = 10;	//20
+				weight_y   = 1;	//28
+				weight_abs = 10;	//5
+				
+				base_speed = 180; 	//500--2.9
+				KP_x  = 2;   		//2
+				K2P_x = 0.008;		//0.008
+				KD_x  = 15;			//15	
+				K2D_x = 1;	  		//1
+			
+				track_error = get_track_error();
+				track_out = PID_track();
+				
 //				if( track_out >  10)	track_out =  10;
 //				if( track_out < -10 )	track_out = -10;
-//			
-//				speed_control(track_out);
 			
-				L_roundabout_judge();
+				speed_control(track_out);
+//				speed_control( 0 );
+			
+//				L_roundabout_judge();
 				R_roundabout_judge();
-			
+//				entered_judge();
+				reroundabout_out_judge();
+				
 			
 			break;
 				
 			case KERNEL_CROSSROADS:
 				
-				weight_x = 15;//15
-				weight_xx = 20;//20
-				weight_y = 28;//28
-				weight_abs = 5;//5
+				weight_x   = 15;	//15
+				weight_xx  = 20;	//20
+				weight_y   = 2;		//28
+				weight_abs = 10;	//5
 				
-				base_speed = 250; //500--2.9
-				KP_x  = 2;   //2
-				K2P_x = 0.008; //0.008
-				KD_x  = 15;	   //15	
-				K2D_x = 1;	   //1
+				base_speed = 150; 	//500--2.9
+				KP_x  = 2;   		//2
+				K2P_x = 0.008;		//0.008
+				KD_x  = 15;			//15	
+				K2D_x = 1;	  		//1
 			
 				track_error = get_track_error();
 				track_out = PID_track();
@@ -104,10 +118,10 @@ void whole_test(void)
 			
 			case KERNEL_ISLAND_L:
 				
-				weight_x = 15;//15
-				weight_xx = 20;//20
-				weight_y = 28;//28
-				weight_abs = 5;//5
+				weight_x   = 15;	//15
+				weight_xx  = 20;	//20
+				weight_y   = 22;	//28
+				weight_abs = 10;		//5
 			
 				KP_a = 2;
 				KD_a = 1.2;
@@ -120,10 +134,12 @@ void whole_test(void)
 			
 			case KERNEL_ISLAND_R:
 				
-				weight_x = 15;//15
-				weight_xx = 20;//20
-				weight_y = 28;//28
-				weight_abs = 5;//5
+				weight_x   = 15;	//15
+				weight_xx  = 20;	//20
+				weight_y   = 22;	//28
+				weight_abs = 10;	//5
+			
+				base_speed= 150;
 			
 				KP_a = 2;
 				KD_a = 1.2;
@@ -149,6 +165,26 @@ void whole_test(void)
 				teeterboard_out_judge();
 			
 			break;
+			
+			case KERNEL_CASK:
+				weight_x   = 15;	//15
+				weight_xx  = 20;	//20
+				weight_y   = 2;		//28
+				weight_abs = 5;		//5
+			
+				base_speed = 210; 	//500--2.9
+				KP_x  = 2;   		//2
+				K2P_x = 0.008; 		//0.008
+				KD_x  = 15;	  		//15	
+				K2D_x = 1;	  		//1
+			
+				track_error = get_track_error();
+				track_out = PID_track();
+				speed_control(track_out);
+				cask_out_judge();
+			break;
+				
+				
 			
 		}
     }
@@ -375,19 +411,20 @@ void gyro_test(void)
 //	gyro_z = imu660rb_gyro_transition(imu660rb_gyro_z);
 	
 	static int16 angle = 0;
-	KP_a=0.3;
-	KG_a =0.1 ;
-	base_speed=70;
-	
-	if( angle_x <= 0)
-	{
-		angle = 380;
-	}
-	if( angle_x >= 360)
-	{
-		angle = -20;	
-	}
-	 
+	KP_a = 2;
+	KD_a = 1.2;
+	KG_a = 0;
+	base_speed=0;
+//	
+//	if( angle_x <= 0)
+//	{
+		angle = 90;
+//	}
+//	if( angle_x >= 360)
+//	{
+//		angle = -20;	
+//	}
+//	 
 	PID_angle( angle );
 	
 	sprintf(uart,"%f,%d,%f\n",angle_x,angle,angle_err);

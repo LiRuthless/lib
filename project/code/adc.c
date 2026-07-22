@@ -19,10 +19,10 @@ int16 track_error = 0; 				// 循迹偏差值（由get_track_error计算）
 int16 symmetry_x = 0;
 int16 symmetry_y = 0;
 
-int8 weight_x = 15;//15
-int8 weight_xx = 20;//20
-int8 weight_y = 28;//28
-int8 weight_abs = 5;//5
+int8 weight_x   = 15;	//15
+int8 weight_xx  = 20;	//20
+int8 weight_y   = 22;	//28
+int8 weight_abs = 10;
 
 uint16 adc_sum[4] = {0};        // 每路ADC累加和，用于平均滤波
 uint16 max[4] = {0};            // 每路ADC采样最大值，用于去极值

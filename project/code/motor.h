@@ -6,7 +6,7 @@
 #define MOTOR_PWM_L                 (PWMB_CH4_P27)      // 左轮PWM
 #define MOTOR_DIR_R                 (IO_P51)            // 右轮方向
 #define MOTOR_PWM_R                 (PWMB_CH3_P25)      // 右轮PWM
-#define MOTOR_PWM_M                 (PWMB_CH1_P50)      // 中舵机PWM
+#define MOTOR_PWM_M                 (PWMA_CH2P_P22)      // 中舵机PWM
 
 // 编码器定义
 #define ENCODER_DIR_L               (TIM1_ENCOEDER)     // 左轮编码器

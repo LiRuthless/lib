@@ -120,7 +120,7 @@ void key_init(void)
 {
 	adc_init(KEY_CHANNEL1, ADC_12BIT);		// 初始化按键ADC通道1
 	adc_init(KEY_CHANNEL2, ADC_12BIT);		// 初始化按键ADC通道2
-	gpio_init(IO_P22, GPIO, 1, GPIO_NO_PULL);	// 初始化启动按键GPIO（P22），无上拉输入
+	gpio_init(IO_P23, GPIO, 1, GPIO_NO_PULL);	// 初始化启动按键GPIO（P23），无上拉输入
 	lowpass_init(&filt_key1, 0.7f);
     lowpass_init(&filt_key2, 0.7f);
 }
@@ -260,7 +260,10 @@ static void menu_draw_content(void)
 		ips114_show_string(2, 0,  "adc1 ");    ips114_show_int16(100, 0,  adc_filted[0]);
         ips114_show_string(2, 16, "adc1 ");    ips114_show_int16(100, 16, adc_filted[1]);
 	    ips114_show_string(2, 32, "adc3 ");    ips114_show_int16(100, 32, adc_filted[2]);
-        ips114_show_string(2, 48, "adc4 ");    ips114_show_int16(100, 48, adc_filted[3]); 
+        ips114_show_string(2, 48, "adc4 ");    ips114_show_int16(100, 48, adc_filted[3]);
+		ips114_show_string(2, 64, "error ");   ips114_show_int16(100, 64, track_error);
+		ips114_show_string(2, 80, "S_X ");    ips114_show_int16(100, 80, symmetry_x);
+		ips114_show_string(2, 96, "S_Y ");   ips114_show_int16(100, 96, symmetry_y);
 // 	    ips114_show_string(2, 32, "adc3 ");    ips114_show_int16(100, 32, key_adc1);
 //        ips114_show_string(2, 48, "adc4 ");    ips114_show_int16(100, 48, key_adc2);
          break;

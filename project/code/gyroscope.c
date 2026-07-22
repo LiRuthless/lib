@@ -23,9 +23,9 @@ float angle_z = 0;       // Z轴角度积分值
 static float accel_offset_x = 0;	 // X轴加速度零偏
 static float accel_offset_y = 0;	 // Y轴加速度零偏
 static float accel_offset_z = 0;	 // Z轴加速度零偏
-static float gyro_offset_x = 0.1;	 // X轴陀螺仪零偏
-static float gyro_offset_y = 0.1;	 // Y轴陀螺仪零偏
-static float gyro_offset_z = 0.1;	 // Z轴陀螺仪零偏
+static float gyro_offset_x = 0;	 // X轴陀螺仪零偏
+static float gyro_offset_y = 0;	 // Y轴陀螺仪零偏
+static float gyro_offset_z = 0;	 // Z轴陀螺仪零偏
 
 
 // 函数名: read_accel_velocity
@@ -43,7 +43,7 @@ void read_accel_velocity(void)
 	accel_y = ((float)imu660rb_acc_y - accel_offset_y) / 14.3f;
 	accel_z = ((float)imu660rb_acc_z - accel_offset_z) / 14.3f;
 	
-	velocity_x += (gyro_x * 0.002);//+ accel_last_x) * 0.001f;		//0.5 * 0.002
+	velocity_x += (gyro_x + accel_last_x) * 0.001f;		//0.5 * 0.002
 	velocity_y += (gyro_y + accel_last_y) * 0.001f;
 	velocity_z += (gyro_z + accel_last_z) * 0.001f;
 	
@@ -69,6 +69,8 @@ void read_gyro_angle(void)
 	gyro_y = ((float)imu660rb_gyro_y - gyro_offset_y) / 14.3f;
 	gyro_z = ((float)imu660rb_gyro_z - gyro_offset_z) / 14.3f;
 	
+	gyro_y = gyro_hpf_update(&gyro_hpf_y, gyro_y);		// y轴角速度高通滤波
+	
 	angle_x += (gyro_x + gyro_last_x) * 0.001f;		//0.5 * 0.002
 	angle_y += (gyro_y + gyro_last_y) * 0.001f;
 	angle_z += (gyro_z + gyro_last_z) * 0.001f;
@@ -76,7 +78,6 @@ void read_gyro_angle(void)
 	gyro_last_x = gyro_x;
 	gyro_last_y = gyro_y;
 	gyro_last_z = gyro_z;
-	
 }
 
 
